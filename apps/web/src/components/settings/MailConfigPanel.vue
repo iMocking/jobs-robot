@@ -69,6 +69,110 @@ const changingPassword = ref(false)
 const saving = ref(false)
 
 /**
+ * 加密方式：三选一，而不是一个裸的 tls 开关。
+ *
+ * 映射严格依据 internal/mail/smtp.go 的 dial()：
+ *   - ssl      → cfg.SMTP.TLS=true → tls.Dial，整条连接即 TLS（隐式 TLS，465 的标准做法）；
+ *   - starttls → TLS=false         → 先明文 smtp.Dial，服务端通告 STARTTLS 时升级（587 的标准做法）；
+ *   - plain    → TLS=false         → 后端是同一个分支；服务端通常不通告 STARTTLS，于是全程明文（25）。
+ *
+ * 为什么要把 starttls 与 plain 拆成两个选项：后端只收到一个 tls 布尔值，
+ * 而运维心里想的是「我要不要加密、用哪种加密」。只给一个「隐式 TLS」开关，
+ * 等于让他自己去猜 587 该开还是该关 —— 这正是 465/587 配错、最后只拿到一个
+ * EOF 的根源。选项文案与服务端 internal/service/mail_hint.go 的
+ * tlsMismatchSteps 保持逐字一致，前后端提示不会互相矛盾。
+ */
+const ENCRYPTIONS = [
+  {
+    value: 'ssl',
+    label: 'SSL/TLS 直连',
+    port: 465,
+    tls: true,
+    hint: '隐式 TLS：整条连接即加密。465 端口的标准做法。',
+  },
+  {
+    value: 'starttls',
+    label: 'STARTTLS',
+    port: 587,
+    tls: false,
+    hint: '先明文连接再升级为 TLS。587 端口的标准做法。',
+  },
+  {
+    value: 'plain',
+    label: '不加密',
+    port: 25,
+    tls: false,
+    hint: '全程明文。25 端口多被云厂商封禁，仅自建网关/内网适用。',
+  },
+]
+
+const encryption = ref('ssl')
+
+function encryptionOption(value) {
+  return ENCRYPTIONS.find((item) => item.value === value)
+}
+
+/** 端口 → 加密方式；只有 465/587/25 这三个标准端口有明确归属，其余返回空串表示「不推断」 */
+function encryptionForPort(port) {
+  const value = Number(port)
+  if (value === 465) return 'ssl'
+  if (value === 587) return 'starttls'
+  if (value === 25) return 'plain'
+  return ''
+}
+
+/**
+ * 选择加密方式时联动端口。
+ *
+ * 端口只在「仍等于上一档的默认端口」时才跟着改：运维把 465 手改成 2465
+ * （部分服务商确实如此）之后再切加密方式，不应该把他的自定义端口冲掉。
+ */
+function chooseEncryption(value) {
+  const previous = encryptionOption(encryption.value)
+  const next = encryptionOption(value)
+  if (!next) return
+  encryption.value = value
+  form.tls = next.tls
+  if (!previous || Number(form.port) === previous.port) form.port = next.port
+}
+
+/** 手动改端口时反向推断加密方式；非标准端口保持当前选择不动 */
+function onPortChange() {
+  const inferred = encryptionForPort(form.port)
+  if (!inferred) return
+  const option = encryptionOption(inferred)
+  encryption.value = inferred
+  form.tls = option.tls
+}
+
+/**
+ * 端口与加密方式的组合诊断。
+ *
+ * 判断与服务端 internal/service/mail_hint.go 的 tlsMismatchAdvice 同一套，
+ * 但刻意放在**提交之前**：465 选成 STARTTLS 时对端只会回一个 EOF，
+ * 与其等一次 30 秒超时再去读错误文案，不如现在就点出来。
+ * 只在已经填了主机时才提示 —— 否则「还没开始填」也会被警告一次。
+ */
+const encryptionWarning = computed(() => {
+  if (!isSmtp.value || !form.host.trim()) return ''
+  const port = Number(form.port)
+  const tls = form.tls
+  if (!tls && port === 465) {
+    return '465 端口必须选「SSL/TLS 直连」（隐式 TLS）：当前组合下服务器会因收到明文而立即断开。'
+  }
+  if (tls && port === 587) {
+    return '587 端口必须选「STARTTLS」（不要选 SSL/TLS 直连）：它只接受先明文再升级 TLS。'
+  }
+  if (tls && port === 25) {
+    return '25 端口通常不通告 STARTTLS，且多数云厂商已封禁；建议改用 465 +「SSL/TLS 直连」。'
+  }
+  if (!tls && port === 25) {
+    return '25 端口多被云厂商封禁；若服务商要求加密，请改用 465（SSL/TLS 直连）或 587（STARTTLS）。'
+  }
+  return ''
+})
+
+/**
  * 把后端视图灌进表单，并同步「当前生效配置」的展示数据。
  *
  * 必须同时更新 data.value：状态卡上的来源徽标、投递器、最后保存时间都读它。
@@ -85,10 +189,15 @@ function hydrate(view) {
   form.from_name = view.from_name || ''
   form.from_address = view.from_address || ''
   form.host = view.host || ''
-  form.port = view.port > 0 ? view.port : 465
+  // 加密方式由 tls 推出；587 与 25 在后端是同一个分支（都传 tls=false），
+  // 靠端口把两者区分回运维当时选的那一档。
+  form.tls = Boolean(view.tls)
+  encryption.value = view.tls ? 'ssl' : Number(view.port) === 25 ? 'plain' : 'starttls'
+  // 端口未配置时落到当前加密方式的默认端口，避免凭空造出一个「465 + STARTTLS」的矛盾组合
+  form.port =
+    view.port > 0 ? view.port : (encryptionOption(encryption.value)?.port ?? 465)
   form.username = view.username || ''
   form.password = ''
-  form.tls = Boolean(view.tls)
   form.clear_password = false
   changingPassword.value = false
   Object.keys(errors).forEach((key) => {
@@ -379,7 +488,7 @@ const DRIVERS = [
           <div>
             <h2 class="text-[16px] font-semibold text-ink-900">发件与 SMTP 参数</h2>
             <p class="mt-1 text-[12.5px] text-ink-400">
-              465 端口请开启「隐式 TLS」，587 端口请关闭（自动走 STARTTLS 升级）。
+              加密方式与端口必须匹配：465 选「SSL/TLS 直连」（隐式 TLS），587 选「STARTTLS」。
             </p>
           </div>
           <AppBadge v-if="!isSmtp" tone="ink" size="sm">当前为开发模式，以下参数暂不生效</AppBadge>
@@ -428,7 +537,63 @@ const DRIVERS = [
           <div class="form-row">
             <label class="text-[13.5px] text-ink-600">SMTP 端口</label>
             <div class="max-w-[200px]">
-              <AppInput v-model.number="form.port" type="number" :error="errors.port" />
+              <AppInput
+                v-model.number="form.port"
+                type="number"
+                :error="errors.port"
+                @update:model-value="onPortChange"
+              />
+            </div>
+          </div>
+
+          <!-- 加密方式：与端口是同一件事的两面，因此紧挨着端口放。
+               只给一个「隐式 TLS」开关时，运维无法表达 587 该开还是该关，
+               这正是 465/587 配错、最后只拿到一个 EOF 的根源。 -->
+          <div class="form-row">
+            <label class="text-[13.5px] text-ink-600">加密方式</label>
+            <div class="max-w-[560px]">
+              <div class="grid gap-2.5 sm:grid-cols-3">
+                <button
+                  v-for="item in ENCRYPTIONS"
+                  :key="item.value"
+                  type="button"
+                  class="rounded-xl border p-3 text-left transition"
+                  :class="
+                    encryption === item.value
+                      ? 'border-brand-500 bg-brand-50/60 ring-1 ring-brand-200'
+                      : 'border-ink-200 bg-white hover:border-brand-300'
+                  "
+                  :aria-pressed="encryption === item.value"
+                  @click="chooseEncryption(item.value)"
+                >
+                  <span class="flex items-start gap-1.5">
+                    <span class="text-[13px] font-medium text-ink-900">{{ item.label }}</span>
+                    <AppIcon
+                      v-if="encryption === item.value"
+                      name="check-circle"
+                      :size="14"
+                      class="ml-auto shrink-0 text-brand-600"
+                    />
+                  </span>
+                  <span class="mt-1 block font-mono text-[11.5px] text-ink-400">
+                    {{ item.port }} · tls={{ item.tls }}
+                  </span>
+                  <span class="mt-1.5 block text-[11.5px] leading-relaxed text-ink-500">
+                    {{ item.hint }}
+                  </span>
+                </button>
+              </div>
+
+              <p
+                v-if="encryptionWarning"
+                class="mt-2.5 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-[12.5px] leading-relaxed text-amber-700"
+              >
+                <AppIcon name="alert" :size="15" class="mt-0.5 shrink-0" />
+                {{ encryptionWarning }}
+              </p>
+              <p v-else class="mt-2 text-[12px] text-ink-400">
+                465 选「SSL/TLS 直连」，587 选「STARTTLS」；手动改端口时会自动跟着切换。
+              </p>
             </div>
           </div>
 
@@ -519,16 +684,6 @@ const DRIVERS = [
                   首尾空白会被自动忽略。密码以密文存储，接口永不回显明文。
                 </p>
               </template>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <label class="text-[13.5px] text-ink-600">隐式 TLS</label>
-            <div class="max-w-[520px]">
-              <AppSwitch v-model="form.tls" label="启用（465 端口通常需要）" />
-              <p class="mt-1.5 text-[12px] text-ink-400">
-                关闭时按 STARTTLS 升级，适用于 587 等端口。
-              </p>
             </div>
           </div>
         </div>

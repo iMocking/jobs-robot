@@ -1660,6 +1660,29 @@ function setupAdmin(body) {
 }
 
 /**
+ * 认证失败的对外文案，逐字抄自 `internal/service/mail_hint.go`（smtpAuthSteps）。
+ *
+ * 结构固定为「结论 + 四条通用排查步骤」，多行是有意的：前端把 message 原样渲染在
+ * 测试按钮下方（`err.message` + white-space: pre-line），运维照着第 1) 条就能解决绝大多数 535。
+ *
+ * 服务商专属的第 5) 条（smtpHostHint 的 QQ/163/Gmail/… 表）没有搬过来：演示用主机名
+ * 不在那张表里时真后端也不会输出这一条，两边文本因此逐字相同。
+ */
+const SMTP_AUTH_STEPS = `请按以下顺序检查
+1) 密码是否是邮箱服务商生成的「授权码」——QQ/163/腾讯企业邮都必须用授权码，不能用登录密码；
+2) 该账号是否已在邮箱网页端开启 SMTP/POP3 服务；
+3) 账号是否填写为完整邮箱地址（如 xxx@qq.com），不要只填前缀；
+4) 服务器与端口是否匹配（个人 QQ 邮箱 smtp.qq.com:465，腾讯企业邮 smtp.exmail.qq.com:465）。`
+
+/** smtpAuthFailureMessage：与 mail_hint.go 同构——「服务器原文」原样保留，绝不改写或截断 */
+function smtpAuthFailureMessage() {
+  return (
+    `SMTP 认证失败（服务器返回 535）：${SMTP_AUTH_STEPS}` +
+    '\n服务器原文：535 "Login fail. Please use the authorization code instead of the login password."'
+  )
+}
+
+/**
  * SendSetupTestMail（POST /system/setup/mail/test）。
  *
  * 三条硬性行为：
@@ -1669,8 +1692,12 @@ function setupAdmin(body) {
  *   - 校验顺序与 service 一致：门控 → 收件人 → 驱动回落 console → Mail.Validate → 密码首尾空白；
  *   - 收件人留空时回落到 auth.setup.test_mail_to（mockAuthConfig.setupTestMailTo）。
  *
- * 演示环境没有 SMTP 客户端，因此「连接失败 / STARTTLS 失败 / 认证失败」那条
- * 503「测试邮件发送失败：…」分支离线无法复现：校验通过即视为发送成功。
+ * 演示环境没有 SMTP 客户端，但**认证失败这条分支必须有办法复现**：它正是
+ * 「授权码填成了登录密码」这类工单的唯一出口，前端要把多行排查步骤原样渲染出来。
+ * 因此这里约定一条主机名规则（走到这一步时 driver 已回落过 console）：
+ *   - console                          → 成功（保留原行为）；
+ *   - 主机名含 "mock"（smtp.mock.local）→ 成功（模拟一个连得上且认证通过的 SMTP）；
+ *   - 其它 smtp 主机                    → 10009 + HTTP 503 + 认证失败文案。
  */
 function sendSetupTestMail(body) {
   // handler 的 binding:"required" 发生在 service 之前：mail 缺失是 10001，不是 409
@@ -1696,6 +1723,12 @@ function sendSetupTestMail(body) {
       message: 'SMTP 密码/授权码首尾不能包含空白字符（复制时容易多带一个空格）',
       status: 400,
     })
+  }
+
+  // 除 console 之外，只有主机名含 "mock" 的主机视为「连得上且认证通过」；
+  // 其余 smtp 主机一律走真实后端那条认证失败分支（apperr.CodeMailAuthFailed → 10009 + 503）。
+  if (String(mail.driver ?? '').trim().toLowerCase() === 'smtp' && !String(mail.smtp.host ?? '').toLowerCase().includes('mock')) {
+    throw new ApiError({ code: 10009, message: smtpAuthFailureMessage(), status: 503 })
   }
 
   // 文案由 handler 拼装（固定文案，不带收件人地址）
@@ -2906,4 +2939,26 @@ export async function mockRequest(method, path, { query = {}, body, authed = fal
   }
   // 响应体只返回 data 部分：http.js 已经负责拆信封与非零码转换
   return matched.handler({ params: matched.params, query, body })
+}
+
+/* -------------------------------------------------------------------------- */
+/* 演示入口：把演示数据切成「全新安装」                                          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * 为什么需要这个入口：默认演示数据里已经有管理员，/system/status 因此恒为 initialized，
+ * 而路由守卫对「已初始化」的处理是把 /setup 直接弹回登录页 —— 于是安装向导
+ * （连同向导里的「测试邮件」按钮、成功/认证失败两条路径）在演示环境里**根本走不到**，
+ * 三个 /system/* 接口也就永远不会被调用。
+ *
+ * 用法：在任意页面地址后加 `?mockSetup=reset` 再打开，例如
+ *   http://127.0.0.1:5173/setup?mockSetup=reset
+ * 本次页面加载会把内存表换成「全新安装」：initialized=false、admin_count=0、
+ * setup_available=true、registration_open=false、mail={driver:'console',source:'config',smtp_configured:false}。
+ *
+ * 它只改内存，**刷新页面即复位**：去掉参数刷新就回到默认演示数据（种子用户、演示邮箱配置都回来）。
+ * 这里不引入任何真实契约字段 —— 本模块只在 VITE_USE_MOCK=true 时由 http.js 动态载入。
+ */
+if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mockSetup') === 'reset') {
+  resetMockSystemState()
 }
