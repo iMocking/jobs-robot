@@ -1,0 +1,53 @@
+# 本地开发依赖：PostgreSQL 17 + Redis 7
+#
+# 注意：宿主机端口刻意避开 5432/6379，防止与其他项目容器冲突。
+#   PostgreSQL -> 127.0.0.1:55432
+#   Redis      -> 127.0.0.1:56379
+#
+# 用法：
+#   docker compose -f deployments/docker-compose.yml up -d
+#   docker compose -f deployments/docker-compose.yml down          # 保留数据卷
+#   docker compose -f deployments/docker-compose.yml down -v       # 清空数据
+name: jobs-robot
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: jobs-robot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jobsrobot
+      POSTGRES_PASSWORD: jobsrobot
+      POSTGRES_DB: jobsrobot
+      # 中文岗位文本排序/检索需要，避免 initdb 使用 C locale
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8"
+      TZ: Asia/Shanghai
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobsrobot -d jobsrobot"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+  redis:
+    image: redis:7-alpine
+    container_name: jobs-robot-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    ports:
+      - "127.0.0.1:56379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:
+  redisdata:

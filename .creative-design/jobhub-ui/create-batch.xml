@@ -1,0 +1,13 @@
+<batch>
+  <items>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="职位列表页" brief="JobHub 直招 Web 端职位列表页 UI 设计稿：顶部导航 + 深蓝渐变 Hero 搜索区 + 左侧筛选栏 + 右侧职位卡片（官网直招标签/薪资/发布时间/来源《加入我们》/最后更新）+ 分页 + 页脚">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/ZoykzkHqqX"/>
+    </item>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="职位详情页" brief="JobHub 直招 Web 端职位详情页 UI 设计稿：职位头部 + 岗位介绍 + 任职要求清单 + 右侧职位信息卡（工作地址/联系方式/最后更新时间/官网《加入我们》直招入口）+ 页脚">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/j9mYmJdkEs"/>
+    </item>
+  </items>
+  <frames/>
+</batch>

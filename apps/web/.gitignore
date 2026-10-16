@@ -1,0 +1,13 @@
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# 本地环境变量（.env.example 才是要提交的模板）
+.env
+.env.*
+!.env.example
+
+.DS_Store
+*.log
+.vite/

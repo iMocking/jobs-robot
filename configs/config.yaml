@@ -1,0 +1,187 @@
+# 直招好工作 · 后端服务配置
+#
+# 优先级：内置默认值 < 本文件 < 环境变量（前缀 JOBSROBOT_，见 .env.example）
+# 环境中未设置的项才会使用此处配置。
+
+app:
+  name: jobs-robot
+  env: development          # development | production | test
+  debug: true
+  api_prefix: /api/v1
+  timezone: Asia/Shanghai
+
+server:
+  host: 0.0.0.0
+  port: 8090
+  read_timeout: 30s
+  write_timeout: 60s
+  shutdown_timeout: 15s
+  trusted_proxies: []       # 部署在网关后时填入，用于正确解析客户端 IP
+
+database:
+  host: 127.0.0.1
+  port: 55432               # 刻意避开 5432，防止与其他项目容器冲突
+  user: jobsrobot
+  password: jobsrobot
+  name: jobsrobot
+  sslmode: disable
+  max_open_conns: 30
+  max_idle_conns: 10
+  conn_max_lifetime: 30m
+  auto_migrate: true        # 启动时执行 ent 自动迁移（生产建议关闭并改用脚本）
+
+redis:
+  addr: 127.0.0.1:56379     # 刻意避开 6379
+  password: ""
+  db: 0
+  pool_size: 20
+  dial_timeout: 5s
+  read_timeout: 3s
+  write_timeout: 3s
+  key_prefix: "jobsrobot:"
+
+jwt:
+  # 生产环境务必替换：openssl rand -base64 48
+  secret: "dev-only-change-me-2f8c1d9a4b6e7f0c3a5b8d1e4f7a0c3b6d9e2f5a8c1b4d7e"
+  issuer: jobs-robot
+  access_ttl: 2h            # 访问令牌有效期（短期）
+  refresh_ttl: 168h         # 刷新令牌有效期（7 天，存于 Redis 可主动吊销）
+
+auth:
+  bcrypt_cost: 12
+  code_length: 6
+  code_ttl: 10m             # 邮箱验证码有效期
+  code_max_attempts: 5      # 单个验证码最多校验失败次数
+  code_send_cooldown: 60s   # 同一邮箱发送验证码的最小间隔
+  code_daily_limit: 20      # 同一邮箱每日发送上限
+  register_need_verify: true
+  login_fail_max: 5         # 连续失败次数达到该值锁定账号
+  login_lock_duration: 15m
+  password_min_length: 8
+  expose_code_in_response: false  # 仅联调期可置 true：接口直接回显验证码
+
+  # 认证接口的 IP 维度限流（enabled=false 或阈值置 0 表示不限流）
+  #
+  # 分离配置的原因：本地联调、自动化测试与生产公网对认证接口的压力差异极大。
+  # 自动化测试若与手工测试共用同一 IP，很容易把「发送验证码」的额度用尽，
+  # 此时可临时调高该阈值，而不必修改代码。
+  rate_limit:
+    enabled: true
+    send_code_limit: 10
+    send_code_window: 1h
+    register_limit: 20
+    register_window: 1h
+    login_limit: 30
+    login_window: 10m
+    forgot_limit: 10
+    forgot_window: 1h
+    reset_limit: 20
+    reset_window: 1h
+    # 安装向导（POST /system/setup、POST /system/setup/mail/test）
+    # 在系统尚未初始化时是公开接口，必须限流。
+    setup_limit: 10
+    setup_window: 1h
+
+  # —— 首次启动的初始管理员自举（默认关闭）——
+  #
+  # 默认关闭：有界面的部署走「安装向导」——第一次打开前端会被强制跳到 /setup，
+  # 由运维自己填写邮箱、密码与真实可用的 SMTP 参数，并当场发送测试邮件验证。
+  # 相关配置见下面的 auth.setup。
+  #
+  # 什么时候才打开它：无界面场景（纯容器、CI、只跑 API 的镜像）没有 /setup 可用。
+  # 此时置 true，API/worker 启动时若系统中不存在任何「可用管理员」
+  # （角色存在且账号未禁用），就创建一个并授予 admin 角色，
+  # 凭据以 WARN 级打印在启动日志，同时写入下面的凭据文件（权限 0600）。
+  #
+  # 幂等：只要已有一名可用管理员就完全跳过，绝不修改任何既有账号。
+  # 注意：与 auth.setup.enabled 不能同时为 true，否则启动即报配置错误。
+  bootstrap:
+    enabled: false                         # true = 启动自动建号（无界面部署）；有界面部署请保持 false
+    email: admin@jobs-robot.local          # 初始管理员邮箱
+    password: ""                           # 留空 = 自动生成 16 位随机强密码；填写则日志只打印占位提示
+    nickname: 初始管理员
+    credential_file: var/bootstrap-admin.txt  # 凭据文件（0600）；留空表示不写文件
+
+  # —— 首次安装向导（默认开放）——
+  #
+  # 前端 /setup 页面 ←→ POST /api/v1/system/setup。
+  # 只在「系统尚无可用管理员」时可用：一旦存在管理员即永久失效（返回 409）。
+  setup:
+    enabled: true                          # 置 false 则 setup_available 恒为 false，前端不再强制跳转
+    test_mail_to: ""                       # 测试邮件默认收件人；留空表示由请求体指定
+
+mail:
+  driver: console           # console：验证码打印到日志；smtp：真实发信
+  from_name: 直招好工作
+  from_address: no-reply@jobs-robot.local
+  smtp:
+    host: ""
+    port: 465
+    username: ""
+    password: ""
+    tls: true
+
+crawler:
+  enabled: true
+  schedule: "0 */6 * * *"   # 每 6 小时一轮全量抓取（cron 表达式，6 段式含秒不支持）
+  workers: 4                # 公司级并发
+  per_host_limit: 1         # 同一域名并发请求数上限
+  request_timeout: 30s
+  delay: 2s                 # 同一站点两次请求的最小间隔
+  random_delay: 1s          # 随机抖动，避免形成固定指纹
+  max_retries: 3
+  max_depth: 3              # 站内链接最大发现深度
+  max_pages_per_site: 200   # 单站点单轮抓取页面上限，防止失控
+  respect_robots: true      # 遵循 robots.txt，务必保持开启
+  robots_ttl: 12h
+  lock_ttl: 30m
+  job_expire_after: 720h    # 30 天未再出现即判定岗位已下线
+
+  # —— 以标准身份声明 AI 机器人访问（每个出站请求都会携带）——
+  identity:
+    bot_name: JobsRobotBot
+    bot_version: "1.0"
+    contact_email: crawler@jobs-robot.local
+    homepage: https://jobs-robot.local/bot
+    purpose: 聚合企业官网直招岗位信息，供求职者检索
+    is_ai: true
+    respect_no_ai: true     # 站点声明 noai/nogptbot 时主动跳过
+    language: "zh-CN,zh;q=0.9,en;q=0.8"
+
+  headless:
+    enabled: true           # 静态抓取拿不到内容时启用无头浏览器兜底
+    fallback_min_length: 800
+    timeout: 45s
+    executable_path: ""     # 留空则自动探测系统 Chrome/Edge
+    wait_after_load: 1500ms
+    max_concurrent: 2
+
+  # —— 规定爬虫只收集哪些工作类型与行业 ——
+  # 运行时可在数据库中通过 Setting(crawler.scope) 覆盖，后台接口可热更新。
+  scope:
+    job_types: ["技术", "产品", "设计", "运营", "市场", "职能"]
+    industries: ["互联网", "人工智能", "金融科技", "智能制造", "新能源"]
+    employment_types: ["全职", "实习", "校招", "社招"]
+    locations: []           # 留空表示不限城市
+    keywords: []            # 命中任一关键词才收集；留空表示不额外过滤
+    exclude_keywords: ["外包", "劳务派遣", "中介"]
+    min_quality_score: 40   # 低于该质量分的岗位不落库
+
+  storage:
+    snapshot_html: false    # 是否留存原始 HTML 快照（排查解析问题用）
+    dir: var/snapshots
+
+cors:
+  enabled: true
+  allow_origins: ["http://localhost:5173", "http://127.0.0.1:5173"]
+  allow_methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+  allow_headers: ["Origin", "Content-Type", "Accept", "Authorization", "X-Request-Id"]
+  expose_headers: ["X-Request-Id"]
+  allow_credentials: true
+  max_age: 86400
+
+log:
+  level: info               # debug | info | warn | error
+  format: console           # console | json
+  output: stdout            # stdout 或文件路径
+  access_log: true

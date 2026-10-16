@@ -1,0 +1,172 @@
+@import 'tailwindcss';
+
+/* ============================================================================
+   设计令牌（取自 .creative-design/jobhub-ui/brief.md 的 Visual 决策）
+   —— 深蓝系主色 + 绿色强调（绿色只服务「官网直招」标签）+ 中性灰底
+   Tailwind v4 采用 CSS-first 配置：@theme 里的变量会直接生成工具类，
+   例如 --color-brand-600 生成 bg-brand-600 / text-brand-600 / border-brand-600。
+   ========================================================================== */
+@theme {
+  /* 主色：深蓝 #1E3A8A → #2563EB → #3B82F6 */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+  --color-brand-950: #172554;
+
+  /* 强调色：绿色仅用于「官网直招」来源标识 */
+  --color-accent-50: #ecfdf5;
+  --color-accent-100: #d1fae5;
+  --color-accent-200: #a7f3d0;
+  --color-accent-400: #34d399;
+  --color-accent-500: #10b981;
+  --color-accent-600: #059669;
+  --color-accent-700: #047857;
+
+  /* 中性色：主文字 #111827，次要 #6B7280 / #9CA3AF */
+  --color-ink-50: #f9fafb;
+  --color-ink-100: #f3f4f6;
+  --color-ink-200: #e5e7eb;
+  --color-ink-300: #d1d5db;
+  --color-ink-400: #9ca3af;
+  --color-ink-500: #6b7280;
+  --color-ink-600: #4b5563;
+  --color-ink-700: #374151;
+  --color-ink-800: #1f2937;
+  --color-ink-900: #111827;
+
+  /* 页面底色 #F5F7FA */
+  --color-page: #f5f7fa;
+
+  /* 语义色：状态徽标 */
+  --color-warn-50: #fffbeb;
+  --color-warn-500: #f59e0b;
+  --color-warn-600: #d97706;
+  --color-danger-50: #fef2f2;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+
+  --radius-card: 1rem;
+
+  --shadow-card: 0 1px 2px 0 rgb(17 24 39 / 0.04), 0 8px 24px -14px rgb(17 24 39 / 0.16);
+  --shadow-card-hover: 0 2px 6px 0 rgb(17 24 39 / 0.06), 0 20px 40px -20px rgb(37 99 235 / 0.32);
+  --shadow-panel: 0 1px 2px 0 rgb(17 24 39 / 0.04), 0 14px 36px -22px rgb(17 24 39 / 0.22);
+  --shadow-auth: 0 28px 70px -28px rgb(15 23 42 / 0.3);
+
+  --font-sans:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+
+  --animate-fade-up: fade-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.24s ease-out both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+   基础样式
+   ========================================================================== */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-page font-sans text-ink-900 antialiased;
+  }
+
+  /* 键盘可达性：统一焦点环，鼠标点击不出现 */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500/60 ring-offset-1 ring-offset-white;
+  }
+
+  ::selection {
+    @apply bg-brand-600/18;
+  }
+
+  /* 数字对齐：统计卡与表格里的金额/计数用等宽数字更整齐 */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ============================================================================
+   自定义工具类
+   ========================================================================== */
+
+/* Hero / 登录页左侧品牌区共用的深蓝渐变 */
+@utility bg-hero {
+  background-image: linear-gradient(135deg, #0f1f4d 0%, #1e3a8a 34%, #2563eb 72%, #3b82f6 100%);
+}
+
+/* 后台侧边栏：自上而下由亮转深的深蓝，与前台 Hero 同色系 */
+@utility bg-sidebar {
+  background-image: linear-gradient(180deg, #1d4ed8 0%, #1e40af 46%, #172554 100%);
+}
+
+/* 卡片：白色圆角 16px + 1px 浅边 + 柔和投影 */
+@utility card {
+  @apply rounded-card border border-ink-200/70 bg-white shadow-card;
+}
+
+@utility card-hover {
+  @apply transition duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-card-hover;
+}
+
+/* 后台内容区 / 前台通栏的同一套宽度节奏 */
+@utility container-page {
+  @apply mx-auto w-full max-w-[1320px] px-6;
+}
+
+/* 隐藏滚动条但保留滚动能力（横向标签组用） */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* 表格单元格：后台 7 张表共用同一套内边距与对齐，避免各写一遍 */
+@utility th-cell {
+  @apply px-5 py-3.5 text-left text-[13px] font-medium whitespace-nowrap;
+}
+
+@utility td-cell {
+  @apply px-5 py-4 align-middle;
+}
+
+/* 表头吸顶行：浅灰底 + 细分隔线 */
+@utility thead-row {
+  @apply border-b border-ink-100 bg-ink-50/70 text-ink-500;
+}
+
+/* 表单里的「标签 + 控件」两列布局 */
+@utility form-row {
+  @apply grid items-center gap-4 py-3.5 sm:grid-cols-[160px_1fr];
+}
+

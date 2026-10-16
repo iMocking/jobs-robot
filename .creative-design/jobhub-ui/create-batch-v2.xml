@@ -1,0 +1,17 @@
+<batch>
+  <items>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="邮箱登录页" brief="JobHub 直招 Web 端邮箱登录页 UI 设计稿：左品牌区 + 右登录卡片（邮箱/密码/记住我/忘记密码/登录/微信抖音登录/用户服务协议与隐私政策声明/立即注册）">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/ur6hImYLBL"/>
+    </item>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="邮箱注册页" brief="JobHub 直招 Web 端邮箱注册页 UI 设计稿：左品牌区 + 右注册卡片（邮箱/图形验证码获取/设置密码/确认密码/同意用户服务协议与隐私政策/注册/已有账号立即登录）">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/e31IDD8I8v"/>
+    </item>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="找回密码页" brief="JobHub 直招 Web 端找回密码页 UI 设计稿：左品牌区 + 右重置卡片（邮箱验证/重置密码/完成三步流程/注册邮箱/邮箱验证码获取/下一步/返回登录）">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/KRAVhkEd7X"/>
+    </item>
+  </items>
+  <frames/>
+</batch>

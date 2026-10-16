@@ -1,0 +1,25 @@
+<batch>
+  <items>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="Admin-仪表盘" brief="JobHub 直招后台仪表盘：统计卡（岗位总数/待审核/收录公司/注册用户）+ 岗位状态分布环形图 + 近7日抓取趋势柱状图 + 待审核队列 + 深蓝侧边栏导航">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/lfbJfvAc0X"/>
+    </item>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="Admin-用户管理" brief="JobHub 直招后台用户管理：筛选栏（搜索/状态/角色/新增用户）+ 用户列表（邮箱/昵称/角色/状态/注册时间/最近登录/操作）+ 分页">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/VZWS3WVcKM"/>
+    </item>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="Admin-权限管理" brief="JobHub 直招后台权限管理：角色卡片（管理员/审核员/用户）+ 权限策略表（角色/访问对象/方法/说明）；侧边栏菜单文字有偏差待修正">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/QuZUol13NB"/>
+    </item>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="Admin-系统配置" brief="JobHub 直招后台系统配置：页签（基础设置/收集范围/爬虫设置）+ 基础设置表单 + 收集范围与过滤规则；侧边栏与字段文字偏差较大待修正">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/6WWmgaZ3Zu"/>
+    </item>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="Admin-系统监控" brief="JobHub 直招后台系统监控：健康检查卡（PostgreSQL/Redis/爬虫开关/权限策略）+ 抓取运行记录表 + 系统信息；侧边栏与表格文字偏差待修正">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/K1gH2MKQNT"/>
+    </item>
+  </items>
+  <frames/>
+</batch>

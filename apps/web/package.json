@@ -1,0 +1,23 @@
+{
+  "name": "@jobs-robot/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "JobHub 直招 · Web 端（Vue 3 + Tailwind CSS）",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173"
+  },
+  "dependencies": {
+    "pinia": "^4.1.0",
+    "vue": "^3.5.44",
+    "vue-router": "^5.4.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.4"
+  }
+}

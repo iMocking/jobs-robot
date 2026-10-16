@@ -1,0 +1,20 @@
+<batch>
+  <items>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="找回密码页-修正尝试1" brief="找回密码页一致性修正尝试1：位置未对齐、品牌名错字，未采用（版本留存）">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/yFViJV2YSB"/>
+    </item>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="找回密码页-修正尝试2" brief="找回密码页一致性修正尝试2：品牌区接近对齐、副标题已补，但流程步骤文字有误，未采用（版本留存）">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/Blsuco196E"/>
+    </item>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="找回密码页-修正版" brief="找回密码页一致性修正版：品牌区与登录页对齐、补齐副标题与三步流程圆点、输入框按钮样式一致；仅徽章文案略有出入">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/6JC5cRzYCd"/>
+      <source_ids>
+        <source_id>iKiifsxh-4L76GG3bEY-0201</source_id>
+      </source_ids>
+    </item>
+  </items>
+  <frames/>
+</batch>
