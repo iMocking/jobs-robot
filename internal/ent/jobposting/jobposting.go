@@ -33,6 +33,8 @@ const (
 	FieldApplyURL = "apply_url"
 	// FieldCompanyID holds the string denoting the company_id field in the database.
 	FieldCompanyID = "company_id"
+	// FieldCreatedBy holds the string denoting the created_by field in the database.
+	FieldCreatedBy = "created_by"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
 	// FieldJobCode holds the string denoting the job_code field in the database.
@@ -178,6 +180,7 @@ var Columns = []string{
 	FieldIsDirectHire,
 	FieldApplyURL,
 	FieldCompanyID,
+	FieldCreatedBy,
 	FieldTitle,
 	FieldJobCode,
 	FieldCategory,
@@ -270,6 +273,8 @@ var (
 	ApplyURLValidator func(string) error
 	// CompanyIDValidator is a validator for the "company_id" field. It is called by the builders before save.
 	CompanyIDValidator func(string) error
+	// CreatedByValidator is a validator for the "created_by" field. It is called by the builders before save.
+	CreatedByValidator func(string) error
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
 	// DefaultJobCode holds the default value on creation for the "job_code" field.
@@ -484,6 +489,11 @@ func ByApplyURL(opts ...sql.OrderTermOption) OrderOption {
 // ByCompanyID orders the results by the company_id field.
 func ByCompanyID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCompanyID, opts...).ToFunc()
+}
+
+// ByCreatedBy orders the results by the created_by field.
+func ByCreatedBy(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedBy, opts...).ToFunc()
 }
 
 // ByTitle orders the results by the title field.

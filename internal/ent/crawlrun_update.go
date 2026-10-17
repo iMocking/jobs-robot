@@ -64,6 +64,26 @@ func (_u *CrawlRunUpdate) SetNillableTrigger(v *crawlrun.Trigger) *CrawlRunUpdat
 	return _u
 }
 
+// SetTriggeredBy sets the "triggered_by" field.
+func (_u *CrawlRunUpdate) SetTriggeredBy(v string) *CrawlRunUpdate {
+	_u.mutation.SetTriggeredBy(v)
+	return _u
+}
+
+// SetNillableTriggeredBy sets the "triggered_by" field if the given value is not nil.
+func (_u *CrawlRunUpdate) SetNillableTriggeredBy(v *string) *CrawlRunUpdate {
+	if v != nil {
+		_u.SetTriggeredBy(*v)
+	}
+	return _u
+}
+
+// ClearTriggeredBy clears the value of the "triggered_by" field.
+func (_u *CrawlRunUpdate) ClearTriggeredBy() *CrawlRunUpdate {
+	_u.mutation.ClearTriggeredBy()
+	return _u
+}
+
 // SetStatus sets the "status" field.
 func (_u *CrawlRunUpdate) SetStatus(v crawlrun.Status) *CrawlRunUpdate {
 	_u.mutation.SetStatus(v)
@@ -448,6 +468,11 @@ func (_u *CrawlRunUpdate) check() error {
 			return &ValidationError{Name: "trigger", err: fmt.Errorf(`ent: validator failed for field "CrawlRun.trigger": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.TriggeredBy(); ok {
+		if err := crawlrun.TriggeredByValidator(v); err != nil {
+			return &ValidationError{Name: "triggered_by", err: fmt.Errorf(`ent: validator failed for field "CrawlRun.triggered_by": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Status(); ok {
 		if err := crawlrun.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "CrawlRun.status": %w`, err)}
@@ -491,6 +516,12 @@ func (_u *CrawlRunUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Trigger(); ok {
 		_spec.SetField(crawlrun.FieldTrigger, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.TriggeredBy(); ok {
+		_spec.SetField(crawlrun.FieldTriggeredBy, field.TypeString, value)
+	}
+	if _u.mutation.TriggeredByCleared() {
+		_spec.ClearField(crawlrun.FieldTriggeredBy, field.TypeString)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(crawlrun.FieldStatus, field.TypeEnum, value)
@@ -695,6 +726,26 @@ func (_u *CrawlRunUpdateOne) SetNillableTrigger(v *crawlrun.Trigger) *CrawlRunUp
 	if v != nil {
 		_u.SetTrigger(*v)
 	}
+	return _u
+}
+
+// SetTriggeredBy sets the "triggered_by" field.
+func (_u *CrawlRunUpdateOne) SetTriggeredBy(v string) *CrawlRunUpdateOne {
+	_u.mutation.SetTriggeredBy(v)
+	return _u
+}
+
+// SetNillableTriggeredBy sets the "triggered_by" field if the given value is not nil.
+func (_u *CrawlRunUpdateOne) SetNillableTriggeredBy(v *string) *CrawlRunUpdateOne {
+	if v != nil {
+		_u.SetTriggeredBy(*v)
+	}
+	return _u
+}
+
+// ClearTriggeredBy clears the value of the "triggered_by" field.
+func (_u *CrawlRunUpdateOne) ClearTriggeredBy() *CrawlRunUpdateOne {
+	_u.mutation.ClearTriggeredBy()
 	return _u
 }
 
@@ -1095,6 +1146,11 @@ func (_u *CrawlRunUpdateOne) check() error {
 			return &ValidationError{Name: "trigger", err: fmt.Errorf(`ent: validator failed for field "CrawlRun.trigger": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.TriggeredBy(); ok {
+		if err := crawlrun.TriggeredByValidator(v); err != nil {
+			return &ValidationError{Name: "triggered_by", err: fmt.Errorf(`ent: validator failed for field "CrawlRun.triggered_by": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Status(); ok {
 		if err := crawlrun.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "CrawlRun.status": %w`, err)}
@@ -1155,6 +1211,12 @@ func (_u *CrawlRunUpdateOne) sqlSave(ctx context.Context) (_node *CrawlRun, err 
 	}
 	if value, ok := _u.mutation.Trigger(); ok {
 		_spec.SetField(crawlrun.FieldTrigger, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.TriggeredBy(); ok {
+		_spec.SetField(crawlrun.FieldTriggeredBy, field.TypeString, value)
+	}
+	if _u.mutation.TriggeredByCleared() {
+		_spec.ClearField(crawlrun.FieldTriggeredBy, field.TypeString)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(crawlrun.FieldStatus, field.TypeEnum, value)

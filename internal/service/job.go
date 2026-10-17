@@ -423,6 +423,10 @@ func (svc *JobService) Create(ctx context.Context, in JobCreateInput, actor Acto
 		SetParseConfidence(1)
 
 	builder = svc.applyEditsToCreate(builder, in.JobEditInput)
+	// 后台手工创建的岗位归属当前管理员；抓取路径由 CrawlService 写爬虫身份。
+	if actor.UserID != "" {
+		builder = builder.SetCreatedBy(actor.UserID)
+	}
 	if in.AutoApprove {
 		builder = builder.SetReviewedAt(now)
 	}

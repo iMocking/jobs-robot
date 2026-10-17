@@ -3,7 +3,6 @@ import { ref } from 'vue'
 
 import AppIcon from '@/components/AppIcon.vue'
 import AppTabs from '@/components/AppTabs.vue'
-import PageHeader from '@/components/PageHeader.vue'
 import AdvancedSettingsPanel from '@/components/settings/AdvancedSettingsPanel.vue'
 import CrawlScopePanel from '@/components/settings/CrawlScopePanel.vue'
 import MailConfigPanel from '@/components/settings/MailConfigPanel.vue'
@@ -30,8 +29,6 @@ const TABS = [
 
 <template>
   <div>
-    <PageHeader title="系统配置" description="邮件服务、爬虫收集范围与高级配置项" />
-
     <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
       <AppTabs v-model="TAB" :tabs="TABS" />
       <p class="flex items-center gap-1.5 text-[12.5px] text-ink-400">

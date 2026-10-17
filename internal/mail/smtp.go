@@ -136,7 +136,13 @@ func (m *smtpMailer) build(msg Message) []byte {
 	boundary := "jobsrobot-" + strconv.FormatInt(time.Now().UnixNano(), 36)
 
 	var sb strings.Builder
-	writeHeader(&sb, "From", formatAddress(m.fromName, m.from))
+	// 显示名优先用消息级的覆盖值（由 service 按 mail.system_from_name 注入），
+	// 为空才回落配置里的 mail.from_name。两者都按 RFC 2047 编码。
+	fromName := strings.TrimSpace(msg.FromName)
+	if fromName == "" {
+		fromName = m.fromName
+	}
+	writeHeader(&sb, "From", formatAddress(fromName, m.from))
 	writeHeader(&sb, "To", msg.To)
 	writeHeader(&sb, "Subject", mime.BEncoding.Encode("UTF-8", msg.Subject))
 	writeHeader(&sb, "Date", time.Now().Format(time.RFC1123Z))

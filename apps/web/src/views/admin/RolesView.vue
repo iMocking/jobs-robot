@@ -10,7 +10,6 @@ import AppIcon from '@/components/AppIcon.vue'
 import AppInput from '@/components/AppInput.vue'
 import AppModal from '@/components/AppModal.vue'
 import AppSelect from '@/components/AppSelect.vue'
-import PageHeader from '@/components/PageHeader.vue'
 import { useAdminRefresh } from '@/composables/useAdminRefresh'
 import { useAsync } from '@/composables/useAsync'
 import { useToastStore } from '@/stores/toast'
@@ -137,15 +136,6 @@ async function submitRemove() {
 
 <template>
   <div>
-    <PageHeader title="角色权限" description="角色只承载展示信息，接口级授权由下面的策略表决定">
-      <template #actions>
-        <AppButton @click="openCreate">
-          <AppIcon name="plus" :size="16" />
-          新增策略
-        </AppButton>
-      </template>
-    </PageHeader>
-
     <div v-if="loading && !ready" class="grid gap-4 lg:grid-cols-3">
       <div v-for="index in 3" :key="index" class="card h-[172px] animate-pulse" />
     </div>
@@ -201,11 +191,17 @@ async function submitRemove() {
 
       <!-- 授权策略表 -->
       <section class="mt-6">
-        <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 class="text-[16px] font-semibold text-ink-900">权限策略</h2>
-          <span class="text-[12.5px] text-ink-400">
-            命中任意一条即放行 · 策略 {{ stats.policies ?? policies.length }} 条 · 角色分组规则
-            {{ stats.grouping_rules ?? 0 }} 条 · 变更最迟 60 秒内生效
+          <span class="flex flex-wrap items-center gap-3">
+            <span class="text-[12.5px] text-ink-400">
+              命中任意一条即放行 · 策略 {{ stats.policies ?? policies.length }} 条 · 角色分组规则
+              {{ stats.grouping_rules ?? 0 }} 条 · 变更最迟 60 秒内生效
+            </span>
+            <AppButton size="sm" @click="openCreate">
+              <AppIcon name="plus" :size="16" />
+              新增策略
+            </AppButton>
           </span>
         </div>
 

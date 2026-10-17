@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -25,14 +26,21 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("email").
 			MaxLen(255).
-			NotEmpty().
-			Unique().
-			Comment("登录邮箱，统一小写存储"),
+			Default("").
+			Comment("登录邮箱，统一小写存储；系统身份为空。非空值仍要求全局唯一（见部分唯一索引）"),
 		field.String("password_hash").
 			MaxLen(255).
-			NotEmpty().
+			Default("").
 			Sensitive().
-			Comment("bcrypt 哈希，永不返回给客户端"),
+			Comment("bcrypt 哈希，永不返回给客户端；系统身份无密码"),
+		field.Enum("kind").
+			Values("human", "system").
+			Default("human").
+			Comment("身份类型：human=真人账号 system=系统内置机器身份"),
+		field.String("system_key").
+			MaxLen(32).
+			Default("").
+			Comment("系统身份的稳定标识（crawler/mail），普通用户为空"),
 		field.String("nickname").
 			MaxLen(64).
 			Default("").
@@ -103,8 +111,18 @@ func (User) Edges() []ent.Edge {
 //
 // 说明：created_at 来自 mixin.Time，ent 不支持对其建索引；
 // 后台用户列表按 status 过滤即可满足性能需求。
+//
+// email / system_key 使用 PostgreSQL 部分唯一索引：系统身份的 email 为空、
+// 普通用户的 system_key 为空，全表唯一约束会让第二个空值插入失败，
+// 因此唯一性只在「非空值」上成立（where email <> ”）。
 func (User) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("status"),
+		index.Fields("email").
+			Unique().
+			Annotations(entsql.IndexWhere("email <> ''")),
+		index.Fields("system_key").
+			Unique().
+			Annotations(entsql.IndexWhere("system_key <> ''")),
 	}
 }

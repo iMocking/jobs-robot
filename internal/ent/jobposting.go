@@ -39,6 +39,8 @@ type JobPosting struct {
 	ApplyURL string `json:"apply_url,omitempty"`
 	// 所属公司
 	CompanyID string `json:"company_id,omitempty"`
+	// 创建者：抓取入库=爬虫身份，后台手工创建=操作管理员
+	CreatedBy *string `json:"created_by,omitempty"`
 	// 岗位名称
 	Title string `json:"title,omitempty"`
 	// JobCode holds the value of the "job_code" field.
@@ -204,7 +206,7 @@ func (*JobPosting) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case jobposting.FieldHeadcount, jobposting.FieldSalaryMin, jobposting.FieldSalaryMax, jobposting.FieldSalaryMonths, jobposting.FieldRevision, jobposting.FieldQualityScore, jobposting.FieldViewCount:
 			values[i] = new(sql.NullInt64)
-		case jobposting.FieldID, jobposting.FieldSourceURL, jobposting.FieldSourceSite, jobposting.FieldSourceCompanyName, jobposting.FieldSourceJobID, jobposting.FieldApplyURL, jobposting.FieldCompanyID, jobposting.FieldTitle, jobposting.FieldJobCode, jobposting.FieldCategory, jobposting.FieldIndustry, jobposting.FieldEmploymentType, jobposting.FieldDepartment, jobposting.FieldExperience, jobposting.FieldEducation, jobposting.FieldWorkMode, jobposting.FieldSalaryText, jobposting.FieldCountry, jobposting.FieldProvince, jobposting.FieldCity, jobposting.FieldDistrict, jobposting.FieldAddress, jobposting.FieldLocationText, jobposting.FieldSummary, jobposting.FieldDescription, jobposting.FieldResponsibilities, jobposting.FieldRequirements, jobposting.FieldBenefits, jobposting.FieldContactPerson, jobposting.FieldContactEmail, jobposting.FieldContactPhone, jobposting.FieldContactWechat, jobposting.FieldApplyMethod, jobposting.FieldContentHash, jobposting.FieldExtractor, jobposting.FieldSnapshotPath, jobposting.FieldStatus, jobposting.FieldReviewerID, jobposting.FieldRejectReason:
+		case jobposting.FieldID, jobposting.FieldSourceURL, jobposting.FieldSourceSite, jobposting.FieldSourceCompanyName, jobposting.FieldSourceJobID, jobposting.FieldApplyURL, jobposting.FieldCompanyID, jobposting.FieldCreatedBy, jobposting.FieldTitle, jobposting.FieldJobCode, jobposting.FieldCategory, jobposting.FieldIndustry, jobposting.FieldEmploymentType, jobposting.FieldDepartment, jobposting.FieldExperience, jobposting.FieldEducation, jobposting.FieldWorkMode, jobposting.FieldSalaryText, jobposting.FieldCountry, jobposting.FieldProvince, jobposting.FieldCity, jobposting.FieldDistrict, jobposting.FieldAddress, jobposting.FieldLocationText, jobposting.FieldSummary, jobposting.FieldDescription, jobposting.FieldResponsibilities, jobposting.FieldRequirements, jobposting.FieldBenefits, jobposting.FieldContactPerson, jobposting.FieldContactEmail, jobposting.FieldContactPhone, jobposting.FieldContactWechat, jobposting.FieldApplyMethod, jobposting.FieldContentHash, jobposting.FieldExtractor, jobposting.FieldSnapshotPath, jobposting.FieldStatus, jobposting.FieldReviewerID, jobposting.FieldRejectReason:
 			values[i] = new(sql.NullString)
 		case jobposting.FieldCreateTime, jobposting.FieldUpdateTime, jobposting.FieldPublishedAt, jobposting.FieldDeadlineAt, jobposting.FieldSourceUpdatedAt, jobposting.FieldLastUpdatedAt, jobposting.FieldLastSeenAt, jobposting.FieldCrawledAt, jobposting.FieldReviewedAt, jobposting.FieldExpiredAt:
 			values[i] = new(sql.NullTime)
@@ -282,6 +284,13 @@ func (_m *JobPosting) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field company_id", values[i])
 			} else if value.Valid {
 				_m.CompanyID = value.String
+			}
+		case jobposting.FieldCreatedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by", values[i])
+			} else if value.Valid {
+				_m.CreatedBy = new(string)
+				*_m.CreatedBy = value.String
 			}
 		case jobposting.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -682,6 +691,11 @@ func (_m *JobPosting) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("company_id=")
 	builder.WriteString(_m.CompanyID)
+	builder.WriteString(", ")
+	if v := _m.CreatedBy; v != nil {
+		builder.WriteString("created_by=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)

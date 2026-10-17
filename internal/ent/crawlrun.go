@@ -28,6 +28,8 @@ type CrawlRun struct {
 	CompanyID string `json:"company_id,omitempty"`
 	// Trigger holds the value of the "trigger" field.
 	Trigger crawlrun.Trigger `json:"trigger,omitempty"`
+	// 触发者用户 ID：手动=管理员，定时/自动=爬虫系统身份
+	TriggeredBy *string `json:"triggered_by,omitempty"`
 	// partial=部分成功 skipped=被 robots 或去重跳过
 	Status crawlrun.Status `json:"status,omitempty"`
 	// SkipReason holds the value of the "skip_reason" field.
@@ -108,7 +110,7 @@ func (*CrawlRun) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case crawlrun.FieldDurationMs, crawlrun.FieldPagesFetched, crawlrun.FieldJobsFound, crawlrun.FieldJobsCreated, crawlrun.FieldJobsUpdated, crawlrun.FieldJobsUnchanged, crawlrun.FieldJobsFiltered, crawlrun.FieldJobsExpired:
 			values[i] = new(sql.NullInt64)
-		case crawlrun.FieldID, crawlrun.FieldCompanyID, crawlrun.FieldTrigger, crawlrun.FieldStatus, crawlrun.FieldSkipReason, crawlrun.FieldCareersURL, crawlrun.FieldErrorMessage:
+		case crawlrun.FieldID, crawlrun.FieldCompanyID, crawlrun.FieldTrigger, crawlrun.FieldTriggeredBy, crawlrun.FieldStatus, crawlrun.FieldSkipReason, crawlrun.FieldCareersURL, crawlrun.FieldErrorMessage:
 			values[i] = new(sql.NullString)
 		case crawlrun.FieldCreateTime, crawlrun.FieldUpdateTime, crawlrun.FieldStartedAt, crawlrun.FieldFinishedAt:
 			values[i] = new(sql.NullTime)
@@ -156,6 +158,13 @@ func (_m *CrawlRun) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field trigger", values[i])
 			} else if value.Valid {
 				_m.Trigger = crawlrun.Trigger(value.String)
+			}
+		case crawlrun.FieldTriggeredBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field triggered_by", values[i])
+			} else if value.Valid {
+				_m.TriggeredBy = new(string)
+				*_m.TriggeredBy = value.String
 			}
 		case crawlrun.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -313,6 +322,11 @@ func (_m *CrawlRun) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("trigger=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Trigger))
+	builder.WriteString(", ")
+	if v := _m.TriggeredBy; v != nil {
+		builder.WriteString("triggered_by=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))

@@ -28,6 +28,8 @@ const (
 	FieldCareersURL = "careers_url"
 	// FieldDiscoveryURL holds the string denoting the discovery_url field in the database.
 	FieldDiscoveryURL = "discovery_url"
+	// FieldDiscoveredBy holds the string denoting the discovered_by field in the database.
+	FieldDiscoveredBy = "discovered_by"
 	// FieldLogoURL holds the string denoting the logo_url field in the database.
 	FieldLogoURL = "logo_url"
 	// FieldIndustry holds the string denoting the industry field in the database.
@@ -110,6 +112,7 @@ var Columns = []string{
 	FieldWebsite,
 	FieldCareersURL,
 	FieldDiscoveryURL,
+	FieldDiscoveredBy,
 	FieldLogoURL,
 	FieldIndustry,
 	FieldSubIndustry,
@@ -172,6 +175,8 @@ var (
 	DefaultDiscoveryURL string
 	// DiscoveryURLValidator is a validator for the "discovery_url" field. It is called by the builders before save.
 	DiscoveryURLValidator func(string) error
+	// DiscoveredByValidator is a validator for the "discovered_by" field. It is called by the builders before save.
+	DiscoveredByValidator func(string) error
 	// DefaultLogoURL holds the default value on creation for the "logo_url" field.
 	DefaultLogoURL string
 	// LogoURLValidator is a validator for the "logo_url" field. It is called by the builders before save.
@@ -287,6 +292,11 @@ func ByCareersURL(opts ...sql.OrderTermOption) OrderOption {
 // ByDiscoveryURL orders the results by the discovery_url field.
 func ByDiscoveryURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDiscoveryURL, opts...).ToFunc()
+}
+
+// ByDiscoveredBy orders the results by the discovered_by field.
+func ByDiscoveredBy(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDiscoveredBy, opts...).ToFunc()
 }
 
 // ByLogoURL orders the results by the logo_url field.

@@ -231,12 +231,13 @@ func (svc *SetupService) SetupAdmin(ctx context.Context, in SetupAdminInput) (*S
 	if in.Mail != nil {
 		// Save 内部负责校验、加密落库、热替换投递器与写 mail.update 审计。
 		if _, err := svc.s.Mail.Save(ctx, MailConfigInput{
-			Driver:      in.Mail.Driver,
-			FromName:    in.Mail.FromName,
-			FromAddress: in.Mail.FromAddress,
-			Host:        in.Mail.SMTP.Host,
-			Port:        in.Mail.SMTP.Port,
-			Username:    in.Mail.SMTP.Username,
+			Driver:         in.Mail.Driver,
+			SystemFromName: firstNonEmpty(in.Mail.SystemFromName, svc.s.Cfg.Mail.SystemFromName),
+			FromName:       in.Mail.FromName,
+			FromAddress:    in.Mail.FromAddress,
+			Host:           in.Mail.SMTP.Host,
+			Port:           in.Mail.SMTP.Port,
+			Username:       in.Mail.SMTP.Username,
 			// 向导提交的是完整配置，密码就是运维刚填的那个；
 			// 这里的空值表示「该 SMTP 不需要认证」，而不是「沿用旧密码」
 			// （系统刚装好，本来也没有旧密码可言）。
@@ -441,6 +442,9 @@ func (svc *SetupService) SendSetupTestMail(ctx context.Context, in TestMailInput
 	if err != nil {
 		return apperr.ErrSettingInvalid.WithMessage("邮件配置无法生效：" + err.Error())
 	}
+	// 测试邮件同样是系统对外发出的信：发件人显示名用系统通知名（配置解析）。
+	// 这不改变审计归属——后台/向导点的测试发信仍然记在操作人（管理员）名下。
+	mail.SetFromName(mailer, cfg.EffectiveSystemFromName())
 
 	if err := mailer.Send(ctx, mail.TestMessage(to, mailer.Name(), time.Now())); err != nil {
 		// 与后台邮件设置页共用同一套文案（认证失败 → 10009 + 排查步骤 + 服务器原文）。

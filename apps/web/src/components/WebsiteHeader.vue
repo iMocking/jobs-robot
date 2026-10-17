@@ -24,6 +24,29 @@ const NAV = [
   { name: 'about', label: '关于直招' },
 ]
 
+/**
+ * 用户菜单与后台顶栏（AdminTopbar）同款交互：
+ * 圆形深蓝头像 + 点击展开下拉（个人中心 / 账号设置 / 退出登录）。
+ * 「个人中心」与「账号设置」分别落到个人中心的资料 / 账号安全两个分区。
+ */
+const userMenuOpen = ref(false)
+
+const USER_MENU = [
+  { key: 'profile', label: '个人中心', icon: 'user', tab: 'profile' },
+  { key: 'security', label: '账号设置', icon: 'lock', tab: 'security' },
+]
+
+function openAccountTab(tab) {
+  userMenuOpen.value = false
+  router.push({ name: 'account', query: tab === 'profile' ? {} : { tab } })
+}
+
+async function handleLogout() {
+  userMenuOpen.value = false
+  await session.logout()
+  router.push({ name: 'home' })
+}
+
 const keyword = ref(String(route.query.keyword ?? ''))
 
 // 从职位页返回首页时，搜索框内容要跟着地址栏走
@@ -88,15 +111,53 @@ function submit() {
         </div>
 
         <template v-if="session.isAuthenticated">
-          <RouterLink
-            :to="{ name: 'account' }"
-            class="flex items-center gap-2 rounded-lg py-1 pr-2.5 pl-1 transition hover:bg-ink-100"
-          >
-            <AppAvatar :name="session.displayName" :initial="session.initial" size="sm" />
-            <span class="hidden max-w-[110px] truncate text-[13.5px] text-ink-700 sm:block">
-              {{ session.displayName }}
-            </span>
-          </RouterLink>
+          <div class="relative">
+            <button
+              type="button"
+              class="flex size-9 items-center justify-center rounded-full bg-brand-600 text-[14px] font-semibold text-white transition hover:bg-brand-700"
+              :aria-expanded="userMenuOpen"
+              aria-haspopup="menu"
+              :aria-label="`用户菜单：${session.displayName}`"
+              @click="userMenuOpen = !userMenuOpen"
+            >
+              {{ session.initial }}
+            </button>
+
+            <template v-if="userMenuOpen">
+              <div class="fixed inset-0 z-10" @click="userMenuOpen = false" />
+              <div
+                class="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-xl border border-ink-200 bg-white py-1.5 shadow-panel"
+                role="menu"
+              >
+                <div class="border-b border-ink-100 px-4 py-2.5">
+                  <p class="truncate text-[13.5px] font-medium text-ink-800">
+                    {{ session.displayName }}
+                  </p>
+                  <p class="truncate text-[12px] text-ink-400">{{ session.user?.email }}</p>
+                </div>
+                <button
+                  v-for="item in USER_MENU"
+                  :key="item.key"
+                  type="button"
+                  class="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13.5px] text-ink-600 transition hover:bg-ink-50"
+                  role="menuitem"
+                  @click="openAccountTab(item.tab)"
+                >
+                  <AppIcon :name="item.icon" :size="16" />
+                  {{ item.label }}
+                </button>
+                <button
+                  type="button"
+                  class="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13.5px] text-red-600 transition hover:bg-red-50"
+                  role="menuitem"
+                  @click="handleLogout"
+                >
+                  <AppIcon name="logout" :size="16" />
+                  退出登录
+                </button>
+              </div>
+            </template>
+          </div>
         </template>
         <AppButton v-else :to="{ name: 'login' }" size="md" class="px-6">登录</AppButton>
       </div>

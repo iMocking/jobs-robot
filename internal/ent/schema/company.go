@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/schema/mixin"
 
 	"github.com/jsong/jobs-robot/internal/ent/schema/mixins"
+	"github.com/jsong/jobs-robot/internal/pkg/ulidid"
 )
 
 // Company 是招聘来源公司。
@@ -46,6 +47,11 @@ func (Company) Fields() []ent.Field {
 			MaxLen(512).
 			Default("").
 			Comment("发现 careers_url 的来源页面"),
+		field.String("discovered_by").
+			MaxLen(ulidid.Length).
+			Optional().
+			Nillable().
+			Comment("招聘入口发现者：爬虫回填时为爬虫系统身份，管理员手工录入为空"),
 		field.String("logo_url").
 			MaxLen(512).
 			Default(""),

@@ -70,6 +70,20 @@ func (_c *CrawlRunCreate) SetNillableTrigger(v *crawlrun.Trigger) *CrawlRunCreat
 	return _c
 }
 
+// SetTriggeredBy sets the "triggered_by" field.
+func (_c *CrawlRunCreate) SetTriggeredBy(v string) *CrawlRunCreate {
+	_c.mutation.SetTriggeredBy(v)
+	return _c
+}
+
+// SetNillableTriggeredBy sets the "triggered_by" field if the given value is not nil.
+func (_c *CrawlRunCreate) SetNillableTriggeredBy(v *string) *CrawlRunCreate {
+	if v != nil {
+		_c.SetTriggeredBy(*v)
+	}
+	return _c
+}
+
 // SetStatus sets the "status" field.
 func (_c *CrawlRunCreate) SetStatus(v crawlrun.Status) *CrawlRunCreate {
 	_c.mutation.SetStatus(v)
@@ -453,6 +467,11 @@ func (_c *CrawlRunCreate) check() error {
 			return &ValidationError{Name: "trigger", err: fmt.Errorf(`ent: validator failed for field "CrawlRun.trigger": %w`, err)}
 		}
 	}
+	if v, ok := _c.mutation.TriggeredBy(); ok {
+		if err := crawlrun.TriggeredByValidator(v); err != nil {
+			return &ValidationError{Name: "triggered_by", err: fmt.Errorf(`ent: validator failed for field "CrawlRun.triggered_by": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "CrawlRun.status"`)}
 	}
@@ -569,6 +588,10 @@ func (_c *CrawlRunCreate) createSpec() (*CrawlRun, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Trigger(); ok {
 		_spec.SetField(crawlrun.FieldTrigger, field.TypeEnum, value)
 		_node.Trigger = value
+	}
+	if value, ok := _c.mutation.TriggeredBy(); ok {
+		_spec.SetField(crawlrun.FieldTriggeredBy, field.TypeString, value)
+		_node.TriggeredBy = &value
 	}
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(crawlrun.FieldStatus, field.TypeEnum, value)

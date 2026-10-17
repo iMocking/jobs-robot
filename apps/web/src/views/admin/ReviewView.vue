@@ -11,7 +11,6 @@ import AppEmpty from '@/components/AppEmpty.vue'
 import AppIcon from '@/components/AppIcon.vue'
 import AppModal from '@/components/AppModal.vue'
 import AppPagination from '@/components/AppPagination.vue'
-import PageHeader from '@/components/PageHeader.vue'
 import { useAdminRefresh } from '@/composables/useAdminRefresh'
 import { useAsync } from '@/composables/useAsync'
 import { useToastStore } from '@/stores/toast'
@@ -200,11 +199,6 @@ const TEXTAREA_CLASS =
 
 <template>
   <div>
-    <PageHeader
-      title="审核队列"
-      description="只显示待审核与已驳回的岗位：通过或驳回都会写入审计日志，可回溯到具体操作人与时间。"
-    />
-
     <!-- 队列规模：分页不影响这两个数字 -->
     <div class="mb-4 grid gap-4 sm:grid-cols-2">
       <div class="card flex items-center gap-3.5 p-4">

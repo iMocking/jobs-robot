@@ -107,13 +107,15 @@ export const ROLE_TONE = {
   admin: 'brand',
   reviewer: 'violet',
   user: 'ink',
+  system: 'teal',
 }
 
-/** 角色 key → 中文名。admin/reviewer/user 是 Casbin 里的稳定标识 */
+/** 角色 key → 中文名。admin/reviewer/user/system 是 Casbin 里的稳定标识 */
 export const ROLE_LABEL = {
   admin: '管理员',
   reviewer: '审核员',
   user: '用户',
+  system: '系统',
 }
 
 export function roleLabel(key) {

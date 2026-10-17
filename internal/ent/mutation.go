@@ -1223,6 +1223,7 @@ type CompanyMutation struct {
 	website                   *string
 	careers_url               *string
 	discovery_url             *string
+	discovered_by             *string
 	logo_url                  *string
 	industry                  *string
 	sub_industry              *string
@@ -1617,6 +1618,55 @@ func (m *CompanyMutation) OldDiscoveryURL(ctx context.Context) (v string, err er
 // ResetDiscoveryURL resets all changes to the "discovery_url" field.
 func (m *CompanyMutation) ResetDiscoveryURL() {
 	m.discovery_url = nil
+}
+
+// SetDiscoveredBy sets the "discovered_by" field.
+func (m *CompanyMutation) SetDiscoveredBy(s string) {
+	m.discovered_by = &s
+}
+
+// DiscoveredBy returns the value of the "discovered_by" field in the mutation.
+func (m *CompanyMutation) DiscoveredBy() (r string, exists bool) {
+	v := m.discovered_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDiscoveredBy returns the old "discovered_by" field's value of the Company entity.
+// If the Company object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompanyMutation) OldDiscoveredBy(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDiscoveredBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDiscoveredBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDiscoveredBy: %w", err)
+	}
+	return oldValue.DiscoveredBy, nil
+}
+
+// ClearDiscoveredBy clears the value of the "discovered_by" field.
+func (m *CompanyMutation) ClearDiscoveredBy() {
+	m.discovered_by = nil
+	m.clearedFields[company.FieldDiscoveredBy] = struct{}{}
+}
+
+// DiscoveredByCleared returns if the "discovered_by" field was cleared in this mutation.
+func (m *CompanyMutation) DiscoveredByCleared() bool {
+	_, ok := m.clearedFields[company.FieldDiscoveredBy]
+	return ok
+}
+
+// ResetDiscoveredBy resets all changes to the "discovered_by" field.
+func (m *CompanyMutation) ResetDiscoveredBy() {
+	m.discovered_by = nil
+	delete(m.clearedFields, company.FieldDiscoveredBy)
 }
 
 // SetLogoURL sets the "logo_url" field.
@@ -2773,7 +2823,7 @@ func (m *CompanyMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CompanyMutation) Fields() []string {
-	fields := make([]string, 0, 32)
+	fields := make([]string, 0, 33)
 	if m.create_time != nil {
 		fields = append(fields, company.FieldCreateTime)
 	}
@@ -2794,6 +2844,9 @@ func (m *CompanyMutation) Fields() []string {
 	}
 	if m.discovery_url != nil {
 		fields = append(fields, company.FieldDiscoveryURL)
+	}
+	if m.discovered_by != nil {
+		fields = append(fields, company.FieldDiscoveredBy)
 	}
 	if m.logo_url != nil {
 		fields = append(fields, company.FieldLogoURL)
@@ -2892,6 +2945,8 @@ func (m *CompanyMutation) Field(name string) (ent.Value, bool) {
 		return m.CareersURL()
 	case company.FieldDiscoveryURL:
 		return m.DiscoveryURL()
+	case company.FieldDiscoveredBy:
+		return m.DiscoveredBy()
 	case company.FieldLogoURL:
 		return m.LogoURL()
 	case company.FieldIndustry:
@@ -2965,6 +3020,8 @@ func (m *CompanyMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldCareersURL(ctx)
 	case company.FieldDiscoveryURL:
 		return m.OldDiscoveryURL(ctx)
+	case company.FieldDiscoveredBy:
+		return m.OldDiscoveredBy(ctx)
 	case company.FieldLogoURL:
 		return m.OldLogoURL(ctx)
 	case company.FieldIndustry:
@@ -3072,6 +3129,13 @@ func (m *CompanyMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDiscoveryURL(v)
+		return nil
+	case company.FieldDiscoveredBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDiscoveredBy(v)
 		return nil
 	case company.FieldLogoURL:
 		v, ok := value.(string)
@@ -3317,6 +3381,9 @@ func (m *CompanyMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *CompanyMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(company.FieldDiscoveredBy) {
+		fields = append(fields, company.FieldDiscoveredBy)
+	}
 	if m.FieldCleared(company.FieldDescription) {
 		fields = append(fields, company.FieldDescription)
 	}
@@ -3343,6 +3410,9 @@ func (m *CompanyMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *CompanyMutation) ClearField(name string) error {
 	switch name {
+	case company.FieldDiscoveredBy:
+		m.ClearDiscoveredBy()
+		return nil
 	case company.FieldDescription:
 		m.ClearDescription()
 		return nil
@@ -3383,6 +3453,9 @@ func (m *CompanyMutation) ResetField(name string) error {
 		return nil
 	case company.FieldDiscoveryURL:
 		m.ResetDiscoveryURL()
+		return nil
+	case company.FieldDiscoveredBy:
+		m.ResetDiscoveredBy()
 		return nil
 	case company.FieldLogoURL:
 		m.ResetLogoURL()
@@ -4368,6 +4441,7 @@ type CrawlRunMutation struct {
 	create_time       *time.Time
 	update_time       *time.Time
 	trigger           *crawlrun.Trigger
+	triggered_by      *string
 	status            *crawlrun.Status
 	skip_reason       *string
 	started_at        *time.Time
@@ -4649,6 +4723,55 @@ func (m *CrawlRunMutation) OldTrigger(ctx context.Context) (v crawlrun.Trigger, 
 // ResetTrigger resets all changes to the "trigger" field.
 func (m *CrawlRunMutation) ResetTrigger() {
 	m.trigger = nil
+}
+
+// SetTriggeredBy sets the "triggered_by" field.
+func (m *CrawlRunMutation) SetTriggeredBy(s string) {
+	m.triggered_by = &s
+}
+
+// TriggeredBy returns the value of the "triggered_by" field in the mutation.
+func (m *CrawlRunMutation) TriggeredBy() (r string, exists bool) {
+	v := m.triggered_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTriggeredBy returns the old "triggered_by" field's value of the CrawlRun entity.
+// If the CrawlRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CrawlRunMutation) OldTriggeredBy(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTriggeredBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTriggeredBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTriggeredBy: %w", err)
+	}
+	return oldValue.TriggeredBy, nil
+}
+
+// ClearTriggeredBy clears the value of the "triggered_by" field.
+func (m *CrawlRunMutation) ClearTriggeredBy() {
+	m.triggered_by = nil
+	m.clearedFields[crawlrun.FieldTriggeredBy] = struct{}{}
+}
+
+// TriggeredByCleared returns if the "triggered_by" field was cleared in this mutation.
+func (m *CrawlRunMutation) TriggeredByCleared() bool {
+	_, ok := m.clearedFields[crawlrun.FieldTriggeredBy]
+	return ok
+}
+
+// ResetTriggeredBy resets all changes to the "triggered_by" field.
+func (m *CrawlRunMutation) ResetTriggeredBy() {
+	m.triggered_by = nil
+	delete(m.clearedFields, crawlrun.FieldTriggeredBy)
 }
 
 // SetStatus sets the "status" field.
@@ -5528,7 +5651,7 @@ func (m *CrawlRunMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CrawlRunMutation) Fields() []string {
-	fields := make([]string, 0, 20)
+	fields := make([]string, 0, 21)
 	if m.create_time != nil {
 		fields = append(fields, crawlrun.FieldCreateTime)
 	}
@@ -5540,6 +5663,9 @@ func (m *CrawlRunMutation) Fields() []string {
 	}
 	if m.trigger != nil {
 		fields = append(fields, crawlrun.FieldTrigger)
+	}
+	if m.triggered_by != nil {
+		fields = append(fields, crawlrun.FieldTriggeredBy)
 	}
 	if m.status != nil {
 		fields = append(fields, crawlrun.FieldStatus)
@@ -5605,6 +5731,8 @@ func (m *CrawlRunMutation) Field(name string) (ent.Value, bool) {
 		return m.CompanyID()
 	case crawlrun.FieldTrigger:
 		return m.Trigger()
+	case crawlrun.FieldTriggeredBy:
+		return m.TriggeredBy()
 	case crawlrun.FieldStatus:
 		return m.Status()
 	case crawlrun.FieldSkipReason:
@@ -5654,6 +5782,8 @@ func (m *CrawlRunMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldCompanyID(ctx)
 	case crawlrun.FieldTrigger:
 		return m.OldTrigger(ctx)
+	case crawlrun.FieldTriggeredBy:
+		return m.OldTriggeredBy(ctx)
 	case crawlrun.FieldStatus:
 		return m.OldStatus(ctx)
 	case crawlrun.FieldSkipReason:
@@ -5722,6 +5852,13 @@ func (m *CrawlRunMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTrigger(v)
+		return nil
+	case crawlrun.FieldTriggeredBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTriggeredBy(v)
 		return nil
 	case crawlrun.FieldStatus:
 		v, ok := value.(crawlrun.Status)
@@ -5964,6 +6101,9 @@ func (m *CrawlRunMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *CrawlRunMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(crawlrun.FieldTriggeredBy) {
+		fields = append(fields, crawlrun.FieldTriggeredBy)
+	}
 	if m.FieldCleared(crawlrun.FieldFinishedAt) {
 		fields = append(fields, crawlrun.FieldFinishedAt)
 	}
@@ -5984,6 +6124,9 @@ func (m *CrawlRunMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *CrawlRunMutation) ClearField(name string) error {
 	switch name {
+	case crawlrun.FieldTriggeredBy:
+		m.ClearTriggeredBy()
+		return nil
 	case crawlrun.FieldFinishedAt:
 		m.ClearFinishedAt()
 		return nil
@@ -6009,6 +6152,9 @@ func (m *CrawlRunMutation) ResetField(name string) error {
 		return nil
 	case crawlrun.FieldTrigger:
 		m.ResetTrigger()
+		return nil
+	case crawlrun.FieldTriggeredBy:
+		m.ResetTriggeredBy()
 		return nil
 	case crawlrun.FieldStatus:
 		m.ResetStatus()
@@ -6178,6 +6324,7 @@ type JobPostingMutation struct {
 	source_job_id           *string
 	is_direct_hire          *bool
 	apply_url               *string
+	created_by              *string
 	title                   *string
 	job_code                *string
 	category                *string
@@ -6677,6 +6824,55 @@ func (m *JobPostingMutation) OldCompanyID(ctx context.Context) (v string, err er
 // ResetCompanyID resets all changes to the "company_id" field.
 func (m *JobPostingMutation) ResetCompanyID() {
 	m.company = nil
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *JobPostingMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *JobPostingMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the JobPosting entity.
+// If the JobPosting object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *JobPostingMutation) OldCreatedBy(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *JobPostingMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[jobposting.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *JobPostingMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[jobposting.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *JobPostingMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, jobposting.FieldCreatedBy)
 }
 
 // SetTitle sets the "title" field.
@@ -9074,7 +9270,7 @@ func (m *JobPostingMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *JobPostingMutation) Fields() []string {
-	fields := make([]string, 0, 60)
+	fields := make([]string, 0, 61)
 	if m.create_time != nil {
 		fields = append(fields, jobposting.FieldCreateTime)
 	}
@@ -9101,6 +9297,9 @@ func (m *JobPostingMutation) Fields() []string {
 	}
 	if m.company != nil {
 		fields = append(fields, jobposting.FieldCompanyID)
+	}
+	if m.created_by != nil {
+		fields = append(fields, jobposting.FieldCreatedBy)
 	}
 	if m.title != nil {
 		fields = append(fields, jobposting.FieldTitle)
@@ -9281,6 +9480,8 @@ func (m *JobPostingMutation) Field(name string) (ent.Value, bool) {
 		return m.ApplyURL()
 	case jobposting.FieldCompanyID:
 		return m.CompanyID()
+	case jobposting.FieldCreatedBy:
+		return m.CreatedBy()
 	case jobposting.FieldTitle:
 		return m.Title()
 	case jobposting.FieldJobCode:
@@ -9410,6 +9611,8 @@ func (m *JobPostingMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldApplyURL(ctx)
 	case jobposting.FieldCompanyID:
 		return m.OldCompanyID(ctx)
+	case jobposting.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
 	case jobposting.FieldTitle:
 		return m.OldTitle(ctx)
 	case jobposting.FieldJobCode:
@@ -9583,6 +9786,13 @@ func (m *JobPostingMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCompanyID(v)
+		return nil
+	case jobposting.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
 		return nil
 	case jobposting.FieldTitle:
 		v, ok := value.(string)
@@ -10070,6 +10280,9 @@ func (m *JobPostingMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *JobPostingMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(jobposting.FieldCreatedBy) {
+		fields = append(fields, jobposting.FieldCreatedBy)
+	}
 	if m.FieldCleared(jobposting.FieldHeadcount) {
 		fields = append(fields, jobposting.FieldHeadcount)
 	}
@@ -10135,6 +10348,9 @@ func (m *JobPostingMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *JobPostingMutation) ClearField(name string) error {
 	switch name {
+	case jobposting.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
 	case jobposting.FieldHeadcount:
 		m.ClearHeadcount()
 		return nil
@@ -10220,6 +10436,9 @@ func (m *JobPostingMutation) ResetField(name string) error {
 		return nil
 	case jobposting.FieldCompanyID:
 		m.ResetCompanyID()
+		return nil
+	case jobposting.FieldCreatedBy:
+		m.ResetCreatedBy()
 		return nil
 	case jobposting.FieldTitle:
 		m.ResetTitle()
@@ -12917,6 +13136,8 @@ type UserMutation struct {
 	update_time               *time.Time
 	email                     *string
 	password_hash             *string
+	kind                      *user.Kind
+	system_key                *string
 	nickname                  *string
 	avatar_url                *string
 	phone                     *string
@@ -13194,6 +13415,78 @@ func (m *UserMutation) OldPasswordHash(ctx context.Context) (v string, err error
 // ResetPasswordHash resets all changes to the "password_hash" field.
 func (m *UserMutation) ResetPasswordHash() {
 	m.password_hash = nil
+}
+
+// SetKind sets the "kind" field.
+func (m *UserMutation) SetKind(u user.Kind) {
+	m.kind = &u
+}
+
+// Kind returns the value of the "kind" field in the mutation.
+func (m *UserMutation) Kind() (r user.Kind, exists bool) {
+	v := m.kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKind returns the old "kind" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldKind(ctx context.Context) (v user.Kind, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+	}
+	return oldValue.Kind, nil
+}
+
+// ResetKind resets all changes to the "kind" field.
+func (m *UserMutation) ResetKind() {
+	m.kind = nil
+}
+
+// SetSystemKey sets the "system_key" field.
+func (m *UserMutation) SetSystemKey(s string) {
+	m.system_key = &s
+}
+
+// SystemKey returns the value of the "system_key" field in the mutation.
+func (m *UserMutation) SystemKey() (r string, exists bool) {
+	v := m.system_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSystemKey returns the old "system_key" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldSystemKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSystemKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSystemKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSystemKey: %w", err)
+	}
+	return oldValue.SystemKey, nil
+}
+
+// ResetSystemKey resets all changes to the "system_key" field.
+func (m *UserMutation) ResetSystemKey() {
+	m.system_key = nil
 }
 
 // SetNickname sets the "nickname" field.
@@ -14017,7 +14310,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 19)
+	fields := make([]string, 0, 21)
 	if m.create_time != nil {
 		fields = append(fields, user.FieldCreateTime)
 	}
@@ -14029,6 +14322,12 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.password_hash != nil {
 		fields = append(fields, user.FieldPasswordHash)
+	}
+	if m.kind != nil {
+		fields = append(fields, user.FieldKind)
+	}
+	if m.system_key != nil {
+		fields = append(fields, user.FieldSystemKey)
 	}
 	if m.nickname != nil {
 		fields = append(fields, user.FieldNickname)
@@ -14091,6 +14390,10 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Email()
 	case user.FieldPasswordHash:
 		return m.PasswordHash()
+	case user.FieldKind:
+		return m.Kind()
+	case user.FieldSystemKey:
+		return m.SystemKey()
 	case user.FieldNickname:
 		return m.Nickname()
 	case user.FieldAvatarURL:
@@ -14138,6 +14441,10 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldEmail(ctx)
 	case user.FieldPasswordHash:
 		return m.OldPasswordHash(ctx)
+	case user.FieldKind:
+		return m.OldKind(ctx)
+	case user.FieldSystemKey:
+		return m.OldSystemKey(ctx)
 	case user.FieldNickname:
 		return m.OldNickname(ctx)
 	case user.FieldAvatarURL:
@@ -14204,6 +14511,20 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPasswordHash(v)
+		return nil
+	case user.FieldKind:
+		v, ok := value.(user.Kind)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKind(v)
+		return nil
+	case user.FieldSystemKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSystemKey(v)
 		return nil
 	case user.FieldNickname:
 		v, ok := value.(string)
@@ -14418,6 +14739,12 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldPasswordHash:
 		m.ResetPasswordHash()
+		return nil
+	case user.FieldKind:
+		m.ResetKind()
+		return nil
+	case user.FieldSystemKey:
+		m.ResetSystemKey()
 		return nil
 	case user.FieldNickname:
 		m.ResetNickname()

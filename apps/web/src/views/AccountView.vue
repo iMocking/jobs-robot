@@ -1,6 +1,6 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import { meApi } from '@/api'
 import { loadTokens } from '@/api/http'
@@ -13,22 +13,52 @@ import AppInput from '@/components/AppInput.vue'
 import { useAsync } from '@/composables/useAsync'
 import { useSessionStore } from '@/stores/session'
 import { useToastStore } from '@/stores/toast'
-import { ROLE_TONE, formatDateTime, relativeTime, roleLabel, toneFor, userInitial } from '@/utils/format'
+import { ROLE_TONE, formatDateTime, relativeTime, roleLabel, userInitial } from '@/utils/format'
 
 /**
- * 我的。
+ * 个人中心。
  *
  * 路由守卫已经保证这里一定是登录态，所以页面不再做「未登录」分支 ——
  * 多余的分支只会让人误以为存在一个能看到的未登录版本。
  *
- * 三块内容按「风险从低到高」排列：资料 → 密码 → 设备。
- * 设备列表放在右侧独立成栏，因为它是唯一会随时间变化、需要反复查看的区域。
+ * 布局与设计稿一致：左栏「资料卡 + 分区菜单」，右栏按分区切换内容。
+ * 资料卡用圆形头像（与后台顶栏同款视觉），菜单四个分区：
+ *   个人资料 → 昵称 / 手机号（PATCH /me 能力内的部分）
+ *   账号安全 → 修改密码 + 活跃设备（按「风险从低到高」排列）
+ *   我的收藏 / 浏览记录 → 后端暂无对应接口，保留入口并以空态如实说明
+ *
+ * 分区由 ?tab= 驱动，默认个人资料；顶栏「账号设置」下拉即落到账号安全分区。
  */
 const session = useSessionStore()
 const toast = useToastStore()
+const route = useRoute()
 const router = useRouter()
 
 const PHONE_RE = /^(1[3-9]\d{9}|0\d{2,3}-?\d{7,8})$/
+
+const MENU = [
+  { key: 'profile', label: '个人资料', icon: 'user' },
+  { key: 'security', label: '账号安全', icon: 'lock' },
+  { key: 'favorites', label: '我的收藏', icon: 'bookmark' },
+  { key: 'history', label: '浏览记录', icon: 'clock' },
+]
+
+/** 合法分区；query 里出现未知值一律回个人资料，避免拼错 tab 显示空白 */
+const VALID_TABS = MENU.map((item) => item.key)
+
+const activeTab = ref(VALID_TABS.includes(route.query.tab) ? route.query.tab : 'profile')
+
+watch(
+  () => route.query.tab,
+  (value) => {
+    activeTab.value = VALID_TABS.includes(value) ? value : 'profile'
+  },
+)
+
+function switchTab(key) {
+  activeTab.value = key
+  router.replace({ query: key === 'profile' ? {} : { tab: key } })
+}
 
 /** 去掉本文件里重复的 role→中文 映射：format.js 的 ROLE_LABEL 才是单一事实来源 */
 const roleItems = computed(() =>
@@ -40,11 +70,20 @@ const roleItems = computed(() =>
   })),
 )
 
-/** 用户头像：UserView 没有 tone / initial，两者都按 email 稳定派生（改昵称不会变颜色） */
+/**
+ * 用户头像：个人中心用深蓝底白字（与后台顶栏头像同款视觉，设计稿一致），
+ * 不再按 email 派生彩色 —— 顶栏、资料卡、表单头像三处必须同色。
+ */
 const userAvatar = computed(() => ({
   initial: userInitial(session.user),
-  tone: toneFor(session.user?.email ?? session.user?.id),
+  tone: 'brand',
 }))
+
+/** 最近登录：UserView 只有 last_login_at（无注册时间字段），没有就显示占位，不编造 */
+const lastLoginText = computed(() => {
+  const value = session.user?.last_login_at
+  return value ? `最近登录 ${relativeTime(value)}` : '—'
+})
 
 /* -------------------------------------------------------------------------- */
 /* 资料设置                                                                    */
@@ -297,190 +336,247 @@ async function handleLogout() {
 
 <template>
   <div class="container-page py-8">
-    <div class="mb-6">
-      <h1 class="text-[24px] font-semibold text-ink-900">我的</h1>
-      <p class="mt-1.5 text-[13.5px] text-ink-500">管理账号资料、登录密码与活跃设备。</p>
-    </div>
-
-    <section class="card p-6">
-      <div class="flex flex-wrap items-start justify-between gap-5">
-        <div class="flex items-start gap-4">
-          <AppAvatar
-            :name="session.displayName"
-            :initial="userAvatar.initial"
-            :tone="userAvatar.tone"
-            size="xl"
-          />
-
-          <div class="min-w-0">
-            <p class="text-[21px] font-semibold text-ink-900">{{ session.displayName }}</p>
-            <p class="mt-1.5 flex items-center gap-1.5 text-[13.5px] text-ink-500">
-              <AppIcon name="mail" :size="15" class="text-ink-400" />
-              {{ session.user?.email }}
+    <div class="grid items-start gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+      <!-- 左栏：资料卡 + 分区菜单 -->
+      <aside class="space-y-6">
+        <section class="card p-6">
+          <div class="flex flex-col items-center text-center">
+            <AppAvatar
+              :name="session.displayName"
+              :initial="userAvatar.initial"
+              :tone="userAvatar.tone"
+              size="xl"
+              circle
+            />
+            <p class="mt-4 text-[19px] font-semibold text-ink-900">{{ session.displayName }}</p>
+            <p class="mt-1.5 flex items-center justify-center gap-1.5 text-[13px] text-ink-500">
+              <AppIcon name="mail" :size="14" class="shrink-0 text-ink-400" />
+              <span class="truncate">{{ session.user?.email }}</span>
             </p>
 
-            <div class="mt-3 flex flex-wrap items-center gap-2">
+            <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
               <AppBadge v-for="item in roleItems" :key="item.key" :tone="item.tone">
                 {{ item.label }}
               </AppBadge>
             </div>
-          </div>
-        </div>
 
-        <div class="flex flex-wrap items-center gap-2.5">
-          <AppButton v-if="session.isStaff" :to="{ name: 'dashboard' }">
+            <p class="mt-4 text-[12.5px] text-ink-400">{{ lastLoginText }}</p>
+          </div>
+
+          <AppButton
+            v-if="session.isStaff"
+            :to="{ name: 'dashboard' }"
+            variant="secondary"
+            class="mt-5 w-full"
+          >
             <AppIcon name="gauge" :size="17" />
             进入后台管理
           </AppButton>
-          <AppButton variant="secondary" @click="handleLogout">
-            <AppIcon name="logout" :size="17" />
-            退出登录
-          </AppButton>
-        </div>
-      </div>
-    </section>
-
-    <div class="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
-      <div class="space-y-6">
-        <section class="card p-6">
-          <h2 class="text-[16px] font-semibold text-ink-900">资料设置</h2>
-          <p class="mt-1 text-[13px] text-ink-500">
-            昵称会出现在你的账号中；手机号是选填项，留空即不公开。
-          </p>
-
-          <div class="mt-5 space-y-4">
-            <AppInput
-              v-model="profile.nickname"
-              label="昵称"
-              placeholder="请输入昵称"
-              maxlength="20"
-              :error="profileErrors.nickname"
-            />
-            <AppInput
-              v-model="profile.phone"
-              label="手机号"
-              placeholder="选填"
-              inputmode="tel"
-              :error="profileErrors.phone"
-            />
-          </div>
-
-          <div class="mt-6 flex flex-wrap items-center gap-3 border-t border-ink-100 pt-5">
-            <AppButton :loading="savingProfile" @click="saveProfile">保存资料</AppButton>
-            <span class="text-[12.5px] text-ink-400">邮箱同时是登录账号，暂不支持修改。</span>
-          </div>
         </section>
 
-        <section class="card p-6">
-          <h2 class="text-[16px] font-semibold text-ink-900">修改密码</h2>
-          <p class="mt-1 text-[13px] text-ink-500">修改成功后，其它设备上的登录状态会被退出。</p>
-
-          <div class="mt-5 space-y-4">
-            <AppInput
-              v-for="field in PASSWORD_FIELDS"
-              :key="field.key"
-              v-model="password[field.key]"
-              :type="passwordVisible[field.key] ? 'text' : 'password'"
-              :label="field.label"
-              :placeholder="field.placeholder"
-              :autocomplete="field.autocomplete"
-              :hint="field.hint"
-              :error="passwordErrors[field.key]"
-            >
-              <template #suffix>
-                <button
-                  type="button"
-                  class="flex size-7 items-center justify-center rounded-md text-ink-400 transition hover:text-ink-600"
-                  :aria-label="`${passwordVisible[field.key] ? '隐藏' : '显示'}${field.label}`"
-                  :aria-pressed="passwordVisible[field.key]"
-                  @click="passwordVisible[field.key] = !passwordVisible[field.key]"
-                >
-                  <AppIcon :name="passwordVisible[field.key] ? 'eye-off' : 'eye'" :size="17" />
-                </button>
-              </template>
-            </AppInput>
-          </div>
-
-          <div class="mt-6 border-t border-ink-100 pt-5">
-            <AppButton :loading="changingPassword" @click="changePassword">修改密码</AppButton>
-          </div>
-        </section>
-      </div>
-
-      <section class="card p-6 lg:sticky lg:top-24">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <h2 class="text-[16px] font-semibold text-ink-900">活跃设备</h2>
-            <p class="mt-1 text-[13px] text-ink-500">这些设备保持登录状态，可随时下线非本人的设备。</p>
-          </div>
-          <AppButton
-            variant="ghost"
-            size="sm"
-            :loading="sessionsLoading"
-            aria-label="刷新活跃设备列表"
-            @click="loadSessions()"
+        <nav class="card overflow-hidden p-2" aria-label="个人中心分区">
+          <button
+            v-for="item in MENU"
+            :key="item.key"
+            type="button"
+            class="flex w-full items-center gap-2.5 rounded-lg px-3.5 py-2.5 text-left text-[14px] transition"
+            :class="
+              activeTab === item.key
+                ? 'bg-brand-50 font-medium text-brand-700'
+                : 'text-ink-600 hover:bg-ink-50 hover:text-ink-900'
+            "
+            @click="switchTab(item.key)"
           >
-            <AppIcon name="refresh" :size="15" />
-          </AppButton>
-        </div>
+            <AppIcon :name="item.icon" :size="17" />
+            {{ item.label }}
+          </button>
+        </nav>
+      </aside>
 
-        <div v-if="sessionsLoading && !sessionsReady" class="mt-5 space-y-3">
-          <div v-for="index in 2" :key="index" class="h-[62px] animate-pulse rounded-xl bg-ink-100" />
-        </div>
+      <!-- 右栏：按分区切换 -->
+      <div class="min-w-0 space-y-6">
+        <template v-if="activeTab === 'profile'">
+          <section class="card p-6">
+            <h2 class="text-[16px] font-semibold text-ink-900">个人资料</h2>
+            <p class="mt-1 text-[13px] text-ink-500">
+              昵称会出现在你的账号中；手机号是选填项，留空即不公开。
+            </p>
 
-        <AppEmpty
-          v-else-if="sessionsError"
-          icon="alert"
-          tone="danger"
-          title="设备列表加载失败"
-          :description="sessionsError.message"
-        >
-          <AppButton @click="loadSessions()">重新加载</AppButton>
-        </AppEmpty>
-
-        <AppEmpty
-          v-else-if="!sessionItems.length"
-          icon="lock-open"
-          title="暂无其它登录设备"
-          description="当前只有本设备在使用该账号。"
-        />
-
-        <ul v-else class="mt-5 divide-y divide-ink-100">
-          <li
-            v-for="item in sessionItems"
-            :key="item.id"
-            class="flex flex-wrap items-center gap-3 py-3.5 first:pt-0 last:pb-0"
-          >
-            <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-ink-100 text-ink-500">
-              <AppIcon name="user" :size="17" />
-            </span>
-
-            <div class="min-w-0 flex-1">
-              <p class="flex flex-wrap items-center gap-2 text-[13.5px] font-medium text-ink-800">
-                <span class="truncate">{{ item.deviceName }}</span>
-                <!-- 「当前设备」用 brand 而不是 accent：绿色只留给「官网直招」 -->
-                <AppBadge v-if="item.isCurrent" tone="brand" size="sm">当前设备</AppBadge>
-              </p>
-              <p class="mt-1 text-[12.5px] text-ink-400">
-                IP {{ item.ip || '未知' }} · 登录于 {{ relativeTime(item.created_at) }} ·
-                {{ expiresText(item.expires_at) }}（{{ formatDateTime(item.expires_at) }} 到期）
-              </p>
+            <div class="mt-5 space-y-4">
+              <div class="flex items-center gap-3">
+                <span class="w-16 shrink-0 text-[13.5px] text-ink-500">头像</span>
+                <AppAvatar
+                  :name="session.displayName"
+                  :initial="userAvatar.initial"
+                  :tone="userAvatar.tone"
+                  size="sm"
+                  circle
+                />
+                <span class="text-[12.5px] text-ink-400">
+                  头像默认为昵称首字，暂不支持自定义上传。
+                </span>
+              </div>
+              <AppInput
+                v-model="profile.nickname"
+                label="昵称"
+                placeholder="请输入昵称"
+                maxlength="20"
+                :error="profileErrors.nickname"
+              />
+              <AppInput
+                v-model="profile.phone"
+                label="手机号"
+                placeholder="选填"
+                inputmode="tel"
+                :error="profileErrors.phone"
+              />
             </div>
 
-            <!-- 当前设备不提供「下线」：那等于给自己一个把本机踢下线的按钮 -->
-            <AppButton
-              v-if="!item.isCurrent"
-              variant="secondary"
-              size="sm"
-              :loading="revokingSid === item.id"
-              :aria-label="`下线设备 ${item.deviceName}`"
-              @click="revoke(item)"
+            <div class="mt-6 flex flex-wrap items-center gap-3 border-t border-ink-100 pt-5">
+              <AppButton :loading="savingProfile" @click="saveProfile">保存修改</AppButton>
+              <span class="text-[12.5px] text-ink-400">邮箱同时是登录账号，暂不支持修改。</span>
+            </div>
+          </section>
+        </template>
+
+        <template v-else-if="activeTab === 'security'">
+          <section class="card p-6">
+            <h2 class="text-[16px] font-semibold text-ink-900">修改密码</h2>
+            <p class="mt-1 text-[13px] text-ink-500">修改成功后，其它设备上的登录状态会被退出。</p>
+
+            <div class="mt-5 space-y-4">
+              <AppInput
+                v-for="field in PASSWORD_FIELDS"
+                :key="field.key"
+                v-model="password[field.key]"
+                :type="passwordVisible[field.key] ? 'text' : 'password'"
+                :label="field.label"
+                :placeholder="field.placeholder"
+                :autocomplete="field.autocomplete"
+                :hint="field.hint"
+                :error="passwordErrors[field.key]"
+              >
+                <template #suffix>
+                  <button
+                    type="button"
+                    class="flex size-7 items-center justify-center rounded-md text-ink-400 transition hover:text-ink-600"
+                    :aria-label="`${passwordVisible[field.key] ? '隐藏' : '显示'}${field.label}`"
+                    :aria-pressed="passwordVisible[field.key]"
+                    @click="passwordVisible[field.key] = !passwordVisible[field.key]"
+                  >
+                    <AppIcon :name="passwordVisible[field.key] ? 'eye-off' : 'eye'" :size="17" />
+                  </button>
+                </template>
+              </AppInput>
+            </div>
+
+            <div class="mt-6 border-t border-ink-100 pt-5">
+              <AppButton :loading="changingPassword" @click="changePassword">修改密码</AppButton>
+            </div>
+          </section>
+
+          <section class="card p-6">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h2 class="text-[16px] font-semibold text-ink-900">活跃设备</h2>
+                <p class="mt-1 text-[13px] text-ink-500">
+                  这些设备保持登录状态，可随时下线非本人的设备。
+                </p>
+              </div>
+              <AppButton
+                variant="ghost"
+                size="sm"
+                :loading="sessionsLoading"
+                aria-label="刷新活跃设备列表"
+                @click="loadSessions()"
+              >
+                <AppIcon name="refresh" :size="15" />
+              </AppButton>
+            </div>
+
+            <div v-if="sessionsLoading && !sessionsReady" class="mt-5 space-y-3">
+              <div v-for="index in 2" :key="index" class="h-[62px] animate-pulse rounded-xl bg-ink-100" />
+            </div>
+
+            <AppEmpty
+              v-else-if="sessionsError"
+              icon="alert"
+              tone="danger"
+              title="设备列表加载失败"
+              :description="sessionsError.message"
             >
-              下线
-            </AppButton>
-          </li>
-        </ul>
-      </section>
+              <AppButton @click="loadSessions()">重新加载</AppButton>
+            </AppEmpty>
+
+            <AppEmpty
+              v-else-if="!sessionItems.length"
+              icon="lock-open"
+              title="暂无其它登录设备"
+              description="当前只有本设备在使用该账号。"
+            />
+
+            <ul v-else class="mt-5 divide-y divide-ink-100">
+              <li
+                v-for="item in sessionItems"
+                :key="item.id"
+                class="flex flex-wrap items-center gap-3 py-3.5 first:pt-0 last:pb-0"
+              >
+                <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-ink-100 text-ink-500">
+                  <AppIcon name="user" :size="17" />
+                </span>
+
+                <div class="min-w-0 flex-1">
+                  <p class="flex flex-wrap items-center gap-2 text-[13.5px] font-medium text-ink-800">
+                    <span class="truncate">{{ item.deviceName }}</span>
+                    <!-- 「当前设备」用 brand 而不是 accent：绿色只留给「官网直招」 -->
+                    <AppBadge v-if="item.isCurrent" tone="brand" size="sm">当前设备</AppBadge>
+                  </p>
+                  <p class="mt-1 text-[12.5px] text-ink-400">
+                    IP {{ item.ip || '未知' }} · 登录于 {{ relativeTime(item.created_at) }} ·
+                    {{ expiresText(item.expires_at) }}（{{ formatDateTime(item.expires_at) }} 到期）
+                  </p>
+                </div>
+
+                <!-- 当前设备不提供「下线」：那等于给自己一个把本机踢下线的按钮 -->
+                <AppButton
+                  v-if="!item.isCurrent"
+                  variant="secondary"
+                  size="sm"
+                  :loading="revokingSid === item.id"
+                  :aria-label="`下线设备 ${item.deviceName}`"
+                  @click="revoke(item)"
+                >
+                  下线
+                </AppButton>
+              </li>
+            </ul>
+          </section>
+        </template>
+
+        <template v-else-if="activeTab === 'favorites'">
+          <section class="card p-6">
+            <h2 class="text-[16px] font-semibold text-ink-900">我的收藏</h2>
+            <AppEmpty
+              class="mt-2"
+              icon="bookmark"
+              title="暂无收藏的职位"
+              description="收藏功能暂未开放，入口为设计稿预留。"
+            />
+          </section>
+        </template>
+
+        <template v-else>
+          <section class="card p-6">
+            <h2 class="text-[16px] font-semibold text-ink-900">浏览记录</h2>
+            <AppEmpty
+              class="mt-2"
+              icon="clock"
+              title="暂无浏览记录"
+              description="浏览记录暂未开放，入口为设计稿预留。"
+            />
+          </section>
+        </template>
+      </div>
     </div>
   </div>
 </template>

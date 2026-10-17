@@ -22,10 +22,14 @@ type User struct {
 	CreateTime time.Time `json:"create_time,omitempty"`
 	// UpdateTime holds the value of the "update_time" field.
 	UpdateTime time.Time `json:"update_time,omitempty"`
-	// 登录邮箱，统一小写存储
+	// 登录邮箱，统一小写存储；系统身份为空。非空值仍要求全局唯一（见部分唯一索引）
 	Email string `json:"email,omitempty"`
-	// bcrypt 哈希，永不返回给客户端
+	// bcrypt 哈希，永不返回给客户端；系统身份无密码
 	PasswordHash string `json:"-"`
+	// 身份类型：human=真人账号 system=系统内置机器身份
+	Kind user.Kind `json:"kind,omitempty"`
+	// 系统身份的稳定标识（crawler/mail），普通用户为空
+	SystemKey string `json:"system_key,omitempty"`
 	// 昵称/姓名
 	Nickname string `json:"nickname,omitempty"`
 	// AvatarURL holds the value of the "avatar_url" field.
@@ -111,7 +115,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldFailedLoginCount:
 			values[i] = new(sql.NullInt64)
-		case user.FieldID, user.FieldEmail, user.FieldPasswordHash, user.FieldNickname, user.FieldAvatarURL, user.FieldPhone, user.FieldStatus, user.FieldLastLoginIP, user.FieldRegisterIP, user.FieldRegisterSource, user.FieldRemark:
+		case user.FieldID, user.FieldEmail, user.FieldPasswordHash, user.FieldKind, user.FieldSystemKey, user.FieldNickname, user.FieldAvatarURL, user.FieldPhone, user.FieldStatus, user.FieldLastLoginIP, user.FieldRegisterIP, user.FieldRegisterSource, user.FieldRemark:
 			values[i] = new(sql.NullString)
 		case user.FieldCreateTime, user.FieldUpdateTime, user.FieldEmailVerifiedAt, user.FieldLastLoginAt, user.FieldLockedUntil, user.FieldPasswordChangedAt:
 			values[i] = new(sql.NullTime)
@@ -159,6 +163,18 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field password_hash", values[i])
 			} else if value.Valid {
 				_m.PasswordHash = value.String
+			}
+		case user.FieldKind:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field kind", values[i])
+			} else if value.Valid {
+				_m.Kind = user.Kind(value.String)
+			}
+		case user.FieldSystemKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field system_key", values[i])
+			} else if value.Valid {
+				_m.SystemKey = value.String
 			}
 		case user.FieldNickname:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -316,6 +332,12 @@ func (_m *User) String() string {
 	builder.WriteString(_m.Email)
 	builder.WriteString(", ")
 	builder.WriteString("password_hash=<sensitive>")
+	builder.WriteString(", ")
+	builder.WriteString("kind=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
+	builder.WriteString(", ")
+	builder.WriteString("system_key=")
+	builder.WriteString(_m.SystemKey)
 	builder.WriteString(", ")
 	builder.WriteString("nickname=")
 	builder.WriteString(_m.Nickname)

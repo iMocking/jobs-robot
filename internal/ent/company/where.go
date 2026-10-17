@@ -100,6 +100,11 @@ func DiscoveryURL(v string) predicate.Company {
 	return predicate.Company(sql.FieldEQ(FieldDiscoveryURL, v))
 }
 
+// DiscoveredBy applies equality check predicate on the "discovered_by" field. It's identical to DiscoveredByEQ.
+func DiscoveredBy(v string) predicate.Company {
+	return predicate.Company(sql.FieldEQ(FieldDiscoveredBy, v))
+}
+
 // LogoURL applies equality check predicate on the "logo_url" field. It's identical to LogoURLEQ.
 func LogoURL(v string) predicate.Company {
 	return predicate.Company(sql.FieldEQ(FieldLogoURL, v))
@@ -623,6 +628,81 @@ func DiscoveryURLEqualFold(v string) predicate.Company {
 // DiscoveryURLContainsFold applies the ContainsFold predicate on the "discovery_url" field.
 func DiscoveryURLContainsFold(v string) predicate.Company {
 	return predicate.Company(sql.FieldContainsFold(FieldDiscoveryURL, v))
+}
+
+// DiscoveredByEQ applies the EQ predicate on the "discovered_by" field.
+func DiscoveredByEQ(v string) predicate.Company {
+	return predicate.Company(sql.FieldEQ(FieldDiscoveredBy, v))
+}
+
+// DiscoveredByNEQ applies the NEQ predicate on the "discovered_by" field.
+func DiscoveredByNEQ(v string) predicate.Company {
+	return predicate.Company(sql.FieldNEQ(FieldDiscoveredBy, v))
+}
+
+// DiscoveredByIn applies the In predicate on the "discovered_by" field.
+func DiscoveredByIn(vs ...string) predicate.Company {
+	return predicate.Company(sql.FieldIn(FieldDiscoveredBy, vs...))
+}
+
+// DiscoveredByNotIn applies the NotIn predicate on the "discovered_by" field.
+func DiscoveredByNotIn(vs ...string) predicate.Company {
+	return predicate.Company(sql.FieldNotIn(FieldDiscoveredBy, vs...))
+}
+
+// DiscoveredByGT applies the GT predicate on the "discovered_by" field.
+func DiscoveredByGT(v string) predicate.Company {
+	return predicate.Company(sql.FieldGT(FieldDiscoveredBy, v))
+}
+
+// DiscoveredByGTE applies the GTE predicate on the "discovered_by" field.
+func DiscoveredByGTE(v string) predicate.Company {
+	return predicate.Company(sql.FieldGTE(FieldDiscoveredBy, v))
+}
+
+// DiscoveredByLT applies the LT predicate on the "discovered_by" field.
+func DiscoveredByLT(v string) predicate.Company {
+	return predicate.Company(sql.FieldLT(FieldDiscoveredBy, v))
+}
+
+// DiscoveredByLTE applies the LTE predicate on the "discovered_by" field.
+func DiscoveredByLTE(v string) predicate.Company {
+	return predicate.Company(sql.FieldLTE(FieldDiscoveredBy, v))
+}
+
+// DiscoveredByContains applies the Contains predicate on the "discovered_by" field.
+func DiscoveredByContains(v string) predicate.Company {
+	return predicate.Company(sql.FieldContains(FieldDiscoveredBy, v))
+}
+
+// DiscoveredByHasPrefix applies the HasPrefix predicate on the "discovered_by" field.
+func DiscoveredByHasPrefix(v string) predicate.Company {
+	return predicate.Company(sql.FieldHasPrefix(FieldDiscoveredBy, v))
+}
+
+// DiscoveredByHasSuffix applies the HasSuffix predicate on the "discovered_by" field.
+func DiscoveredByHasSuffix(v string) predicate.Company {
+	return predicate.Company(sql.FieldHasSuffix(FieldDiscoveredBy, v))
+}
+
+// DiscoveredByIsNil applies the IsNil predicate on the "discovered_by" field.
+func DiscoveredByIsNil() predicate.Company {
+	return predicate.Company(sql.FieldIsNull(FieldDiscoveredBy))
+}
+
+// DiscoveredByNotNil applies the NotNil predicate on the "discovered_by" field.
+func DiscoveredByNotNil() predicate.Company {
+	return predicate.Company(sql.FieldNotNull(FieldDiscoveredBy))
+}
+
+// DiscoveredByEqualFold applies the EqualFold predicate on the "discovered_by" field.
+func DiscoveredByEqualFold(v string) predicate.Company {
+	return predicate.Company(sql.FieldEqualFold(FieldDiscoveredBy, v))
+}
+
+// DiscoveredByContainsFold applies the ContainsFold predicate on the "discovered_by" field.
+func DiscoveredByContainsFold(v string) predicate.Company {
+	return predicate.Company(sql.FieldContainsFold(FieldDiscoveredBy, v))
 }
 
 // LogoURLEQ applies the EQ predicate on the "logo_url" field.

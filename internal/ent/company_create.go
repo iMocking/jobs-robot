@@ -112,6 +112,20 @@ func (_c *CompanyCreate) SetNillableDiscoveryURL(v *string) *CompanyCreate {
 	return _c
 }
 
+// SetDiscoveredBy sets the "discovered_by" field.
+func (_c *CompanyCreate) SetDiscoveredBy(v string) *CompanyCreate {
+	_c.mutation.SetDiscoveredBy(v)
+	return _c
+}
+
+// SetNillableDiscoveredBy sets the "discovered_by" field if the given value is not nil.
+func (_c *CompanyCreate) SetNillableDiscoveredBy(v *string) *CompanyCreate {
+	if v != nil {
+		_c.SetDiscoveredBy(*v)
+	}
+	return _c
+}
+
 // SetLogoURL sets the "logo_url" field.
 func (_c *CompanyCreate) SetLogoURL(v string) *CompanyCreate {
 	_c.mutation.SetLogoURL(v)
@@ -699,6 +713,11 @@ func (_c *CompanyCreate) check() error {
 			return &ValidationError{Name: "discovery_url", err: fmt.Errorf(`ent: validator failed for field "Company.discovery_url": %w`, err)}
 		}
 	}
+	if v, ok := _c.mutation.DiscoveredBy(); ok {
+		if err := company.DiscoveredByValidator(v); err != nil {
+			return &ValidationError{Name: "discovered_by", err: fmt.Errorf(`ent: validator failed for field "Company.discovered_by": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.LogoURL(); !ok {
 		return &ValidationError{Name: "logo_url", err: errors.New(`ent: missing required field "Company.logo_url"`)}
 	}
@@ -889,6 +908,10 @@ func (_c *CompanyCreate) createSpec() (*Company, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.DiscoveryURL(); ok {
 		_spec.SetField(company.FieldDiscoveryURL, field.TypeString, value)
 		_node.DiscoveryURL = value
+	}
+	if value, ok := _c.mutation.DiscoveredBy(); ok {
+		_spec.SetField(company.FieldDiscoveredBy, field.TypeString, value)
+		_node.DiscoveredBy = &value
 	}
 	if value, ok := _c.mutation.LogoURL(); ok {
 		_spec.SetField(company.FieldLogoURL, field.TypeString, value)

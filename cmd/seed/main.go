@@ -56,6 +56,13 @@ var roleSeeds = []roleSeed{
 		Description: "浏览已发布的直招岗位，维护个人资料与登录会话",
 		Level:       10,
 	},
+	{
+		Name:        casbin.RoleSystem,
+		DisplayName: "系统",
+		Description: "系统内置机器身份（爬虫 / 邮件机器人）：不继承任何角色、不能登录、不能访问后台接口，仅用于审计归属",
+		// 低于普通用户：它没有任何业务权限，只是身份标记。
+		Level: 1,
+	},
 }
 
 func main() {
@@ -95,7 +102,10 @@ func main() {
 
 	// 汇总输出，便于部署脚本判断结果。
 	roleCount, _ := app.Store.Ent.Role.Query().Count(ctx)
-	userCount, _ := app.Store.Ent.User.Query().Count(ctx)
+	// 用户数量只统计真人账号：系统机器身份由 bootstrap 幂等创建，不是运营数据。
+	userCount, _ := app.Store.Ent.User.Query().
+		Where(entuser.KindNEQ(entuser.KindSystem)).
+		Count(ctx)
 	fmt.Println()
 	fmt.Println("========== 初始化完成 ==========")
 	fmt.Printf("角色数量：%d\n", roleCount)

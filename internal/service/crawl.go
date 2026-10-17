@@ -87,12 +87,17 @@ func (svc *CrawlService) CrawlCompany(ctx context.Context, companyID string, tri
 
 	// 建立运行记录
 	now := time.Now()
-	run, err := svc.s.Store.Ent.CrawlRun.Create().
+	runBuilder := svc.s.Store.Ent.CrawlRun.Create().
 		SetCompanyID(companyID).
 		SetTrigger(crawlrun.Trigger(normalizeTrigger(trigger))).
 		SetStatus(crawlrun.StatusRunning).
-		SetStartedAt(now).
-		Save(ctx)
+		SetStartedAt(now)
+	// triggered_by 记录「谁按下了这次抓取」：手动触发是管理员，
+	// 定时/自动触发是爬虫系统身份（bootstrap 时注册的 ULID）。
+	if actor.UserID != "" {
+		runBuilder = runBuilder.SetTriggeredBy(actor.UserID)
+	}
+	run, err := runBuilder.Save(ctx)
 	if err != nil {
 		return nil, apperr.ErrInternal.WithCause(err)
 	}
@@ -233,7 +238,9 @@ func (svc *CrawlService) DiscoverCareers(ctx context.Context, companyID string, 
 // CrawlAll 抓取全部符合条件的公司（供定时任务调用）。
 //
 // 并发度由 crawler.workers 控制；单个公司失败不影响其他公司。
-func (svc *CrawlService) CrawlAll(ctx context.Context, trigger string) ([]CrawlRunView, error) {
+// actor 决定 triggered_by 的归属：定时任务传入爬虫身份，
+// 后台「全部抓取」传入当前管理员，这样运行记录能回答「是谁触发的」。
+func (svc *CrawlService) CrawlAll(ctx context.Context, trigger string, actor Actor) ([]CrawlRunView, error) {
 	if !svc.s.Cfg.Crawler.Enabled {
 		return nil, apperr.ErrCrawlerDisabled
 	}
@@ -268,7 +275,7 @@ func (svc *CrawlService) CrawlAll(ctx context.Context, trigger string) ([]CrawlR
 			defer wg.Done()
 			defer func() { <-sem }()
 
-			view, err := svc.CrawlCompany(ctx, companyID, trigger, SystemActor())
+			view, err := svc.CrawlCompany(ctx, companyID, trigger, actor)
 			if err != nil {
 				// 被锁占用属于正常竞争，不记为失败。
 				if apperr.Is(err, apperr.CodeRunInProgress) {
@@ -276,7 +283,7 @@ func (svc *CrawlService) CrawlAll(ctx context.Context, trigger string) ([]CrawlR
 					return
 				}
 				slog.Warn("抓取公司失败", "company_id", companyID, "company", name, "error", err)
-				svc.s.Audit.Record(ctx, SystemActor(), "crawl.failed", "company", companyID,
+				svc.s.Audit.Record(ctx, actor, "crawl.failed", "company", companyID,
 					map[string]any{"error": err.Error()})
 				return
 			}
@@ -460,6 +467,11 @@ func (svc *CrawlService) upsertJob(ctx context.Context, comp *ent.Company, ej *c
 			builder = builder.SetRawJSON(ej.Raw)
 		}
 		builder = applyContentFieldsToCreate(builder, fields)
+		// 抓取流水线新建的岗位归属爬虫系统身份。只在新建分支写入；
+		// 后续 update/unchanged 都不会触碰 created_by（「谁先发现这个岗位」不随重抓改变）。
+		if crawlerID := systemActorID(SystemKeyCrawler); crawlerID != nil {
+			builder = builder.SetCreatedBy(*crawlerID)
+		}
 		if ej.Country != "" {
 			builder = builder.SetCountry(truncateRunes(ej.Country, 64))
 		}
@@ -491,8 +503,9 @@ func (svc *CrawlService) upsertJob(ctx context.Context, comp *ent.Company, ej *c
 			return "", apperr.ErrInternal.WithCause(err)
 		}
 		// 新岗位直接生成一条初始修订，保证「最后更新时间」有据可查。
+		// operator_id 归属爬虫系统身份，后台可从用户列表解析出「Jobs AI Robot」。
 		if err := recordJobRevision(ctx, svc.s, created.ID, 1, newHash, nil,
-			fields.snapshot(), created.SourceURL, "crawl", nil); err != nil {
+			fields.snapshot(), created.SourceURL, "crawl", systemActorID(SystemKeyCrawler)); err != nil {
 			slog.Warn("写入初始修订记录失败", "job_id", created.ID, "error", err)
 		}
 		return outcomeCreated, nil
@@ -568,8 +581,9 @@ func (svc *CrawlService) upsertJob(ctx context.Context, comp *ent.Company, ej *c
 	if _, err := updater.Save(ctx); err != nil {
 		return "", apperr.ErrInternal.WithCause(err)
 	}
+	// 抓取产生的修订统一归属爬虫身份；人工编辑仍走 JobService 传当前管理员。
 	if err := recordJobRevision(ctx, svc.s, existing.ID, revision, newHash, changed,
-		fields.snapshot(), ej.SourceURL, "crawl", nil); err != nil {
+		fields.snapshot(), ej.SourceURL, "crawl", systemActorID(SystemKeyCrawler)); err != nil {
 		slog.Warn("写入修订记录失败", "job_id", existing.ID, "error", err)
 	}
 	return outcomeUpdated, nil
@@ -678,6 +692,10 @@ func (svc *CrawlService) updateCompanyAfterCrawl(
 		updater = updater.SetCareersURL(truncateRunes(result.CareersURL, 512))
 		if len(result.Logs) > 0 {
 			updater = updater.SetDiscoveryURL(truncateRunes(result.Logs[0].URL, 512))
+		}
+		// 只有爬虫自动发现并回填时才写 discovered_by；公司本身的创建者语义不变。
+		if crawlerID := systemActorID(SystemKeyCrawler); crawlerID != nil {
+			updater = updater.SetDiscoveredBy(*crawlerID)
 		}
 	}
 

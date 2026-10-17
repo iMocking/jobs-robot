@@ -563,8 +563,9 @@ func (svc *CompanyService) RefreshJobCount(ctx context.Context, id string) error
 	}
 
 	// 统计值是派生缓存，仅在真的变化时留痕：审核高峰期不要把审计表刷成计数流水。
-	// 本方法没有 actor 参数（可由任意业务流程触发），因此记为系统操作。
-	svc.s.Audit.Record(ctx, SystemActor(), actionCompanyRefreshJobs, resourceCompany, id, map[string]any{
+	// 本方法没有 actor 参数（可由任意业务流程触发），统一归属爬虫系统身份：
+	// 岗位计数的变化主要来自抓取入库与抓取后的下线判定。
+	svc.s.Audit.Record(ctx, SystemActorFor(SystemKeyCrawler), actionCompanyRefreshJobs, resourceCompany, id, map[string]any{
 		"job_count": fieldChange(current.JobCount, count),
 	})
 	return nil

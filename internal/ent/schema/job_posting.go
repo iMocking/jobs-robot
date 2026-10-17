@@ -62,6 +62,11 @@ func (JobPosting) Fields() []ent.Field {
 			MaxLen(ulidid.Length).
 			NotEmpty().
 			Comment("所属公司"),
+		field.String("created_by").
+			MaxLen(ulidid.Length).
+			Optional().
+			Nillable().
+			Comment("创建者：抓取入库=爬虫身份，后台手工创建=操作管理员"),
 
 		// —— 岗位内容 ——
 		field.String("title").

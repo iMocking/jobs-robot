@@ -45,6 +45,7 @@ useAdminRefresh(run)
 /** 表单副本；密码单独处理，见下面的 passwordDirty */
 const form = reactive({
   driver: 'console',
+  system_from_name: '',
   from_name: '',
   from_address: '',
   host: '',
@@ -186,6 +187,7 @@ function hydrate(view) {
   if (!view) return
   data.value = view
   form.driver = view.driver || 'console'
+  form.system_from_name = view.system_from_name || ''
   form.from_name = view.from_name || ''
   form.from_address = view.from_address || ''
   form.host = view.host || ''
@@ -206,6 +208,7 @@ function hydrate(view) {
   // 用结构化快照做脏检查：只有真正改过的字段才值得写一遍
   baseline.value = JSON.stringify({
     driver: form.driver,
+    system_from_name: form.system_from_name,
     from_name: form.from_name,
     from_address: form.from_address,
     host: form.host,
@@ -221,6 +224,7 @@ watch(data, (value) => hydrate(value), { immediate: true })
 const snapshot = computed(() =>
   JSON.stringify({
     driver: form.driver,
+    system_from_name: form.system_from_name,
     from_name: form.from_name,
     from_address: form.from_address,
     host: form.host,
@@ -291,6 +295,7 @@ async function save() {
   try {
     const payload = {
       driver: form.driver,
+      system_from_name: form.system_from_name.trim(),
       from_name: form.from_name.trim(),
       from_address: form.from_address.trim(),
       host: form.host.trim(),
@@ -495,6 +500,19 @@ const DRIVERS = [
         </div>
 
         <div class="divide-y divide-ink-100">
+          <div class="form-row">
+            <label class="text-[13.5px] text-ink-600">系统通知发件人名称</label>
+            <div class="max-w-[520px]">
+              <AppInput
+                v-model="form.system_from_name"
+                placeholder="例如：直招好工作 · 系统通知"
+              />
+              <p class="mt-1.5 text-[12px] text-ink-400">
+                影响所有系统邮件（验证码、找回密码、改密通知等）在收件箱中显示的发件人名称；留空时回退到下方「发件人名称」。
+              </p>
+            </div>
+          </div>
+
           <div class="form-row">
             <label class="text-[13.5px] text-ink-600">发件人名称</label>
             <div class="max-w-[520px]">

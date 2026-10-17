@@ -5,19 +5,19 @@
  *   { code, message, data, details, request_id }
  * 业务层拿到的永远是 data；错误一律抛 ApiError，调用方只判断 err.code。
  *
- * VITE_USE_MOCK=true（默认）时请求不发出网络，改由 src/api/mock 提供演示数据，
- * 这样在没有后端的情况下也能逐屏验收设计稿。
+ * 前端**始终请求真实后端**（VITE_API_BASE，联调时由 vite 代理到 cmd/api 的 8090）。
+ * mock 演示数据已下线：mock 开关被固定为 false，即使环境里残留 VITE_USE_MOCK=true
+ * 也不会再被读取；src/api/mock 保留为存档，不再参与请求分发。
+ * 后端未启动时，由全局 BackendDownBanner 给出醒目提示，而不是静默失败。
  */
 const API_BASE = (import.meta.env.VITE_API_BASE || '/api/v1').replace(/\/+$/, '')
 
 /**
- * 默认走真实后端。
- * 要脱离后端做纯界面开发/验收时，在 .env.local 里设 VITE_USE_MOCK=true。
- *
- * 之所以把默认值从 true 改成 false：mock 一旦默认开启，很容易在「演示数据能跑通」
- * 的错觉里积累与真实 DTO 不一致的字段，等到联调时才发现整页都要改。
+ * mock 已下线：恒为 false，请求一律走真实后端。
+ * 保留常量与分支是为了让依赖 USE_MOCK 的视图提示自动隐藏，
+ * 以及万一将来需要恢复演示模式时改动点唯一。
  */
-export const USE_MOCK = String(import.meta.env.VITE_USE_MOCK ?? 'false').toLowerCase() === 'true'
+export const USE_MOCK = false
 
 const TOKEN_KEY = 'jobhub.tokens'
 
@@ -155,11 +155,6 @@ async function rawFetch(method, path, { query, body, absolute = false } = {}) {
 export async function request(method, path, options = {}) {
   const { auth = true } = options
 
-  if (USE_MOCK) {
-    const { mockRequest } = await import('@/api/mock')
-    return mockRequest(method, path, { ...options, authed: auth && Boolean(accessToken()) })
-  }
-
   try {
     return await rawFetch(method, path, options)
   } catch (err) {
@@ -199,11 +194,6 @@ export const http = {
  * 因此这里把解析后的 payload 原样交回调用方，由页面自己决定怎么表达健康状态。
  */
 export async function requestProbe(path) {
-  if (USE_MOCK) {
-    const { mockRequest } = await import('@/api/mock')
-    return mockRequest('GET', path, { auth: false })
-  }
-
   const res = await fetch(path, { headers: { Accept: 'application/json' } })
   const payload = await res.json().catch(() => null)
   if (!payload) {

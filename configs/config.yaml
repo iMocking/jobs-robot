@@ -112,7 +112,8 @@ auth:
 
 mail:
   driver: console           # console：验证码打印到日志；smtp：真实发信
-  from_name: 直招好工作
+  system_from_name: 直招好工作 · 系统通知  # 系统邮件在收件箱显示的 From 名称（为空回退 from_name）
+  from_name: 直招好工作      # 通用兜底显示名（system_from_name 为空时使用）
   from_address: no-reply@jobs-robot.local
   smtp:
     host: ""

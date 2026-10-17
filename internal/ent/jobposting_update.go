@@ -136,6 +136,26 @@ func (_u *JobPostingUpdate) SetNillableCompanyID(v *string) *JobPostingUpdate {
 	return _u
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (_u *JobPostingUpdate) SetCreatedBy(v string) *JobPostingUpdate {
+	_u.mutation.SetCreatedBy(v)
+	return _u
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (_u *JobPostingUpdate) SetNillableCreatedBy(v *string) *JobPostingUpdate {
+	if v != nil {
+		_u.SetCreatedBy(*v)
+	}
+	return _u
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (_u *JobPostingUpdate) ClearCreatedBy() *JobPostingUpdate {
+	_u.mutation.ClearCreatedBy()
+	return _u
+}
+
 // SetTitle sets the "title" field.
 func (_u *JobPostingUpdate) SetTitle(v string) *JobPostingUpdate {
 	_u.mutation.SetTitle(v)
@@ -1123,6 +1143,11 @@ func (_u *JobPostingUpdate) check() error {
 			return &ValidationError{Name: "company_id", err: fmt.Errorf(`ent: validator failed for field "JobPosting.company_id": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.CreatedBy(); ok {
+		if err := jobposting.CreatedByValidator(v); err != nil {
+			return &ValidationError{Name: "created_by", err: fmt.Errorf(`ent: validator failed for field "JobPosting.created_by": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Title(); ok {
 		if err := jobposting.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "JobPosting.title": %w`, err)}
@@ -1301,6 +1326,12 @@ func (_u *JobPostingUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if value, ok := _u.mutation.ApplyURL(); ok {
 		_spec.SetField(jobposting.FieldApplyURL, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.CreatedBy(); ok {
+		_spec.SetField(jobposting.FieldCreatedBy, field.TypeString, value)
+	}
+	if _u.mutation.CreatedByCleared() {
+		_spec.ClearField(jobposting.FieldCreatedBy, field.TypeString)
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(jobposting.FieldTitle, field.TypeString, value)
@@ -1758,6 +1789,26 @@ func (_u *JobPostingUpdateOne) SetNillableCompanyID(v *string) *JobPostingUpdate
 	if v != nil {
 		_u.SetCompanyID(*v)
 	}
+	return _u
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (_u *JobPostingUpdateOne) SetCreatedBy(v string) *JobPostingUpdateOne {
+	_u.mutation.SetCreatedBy(v)
+	return _u
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (_u *JobPostingUpdateOne) SetNillableCreatedBy(v *string) *JobPostingUpdateOne {
+	if v != nil {
+		_u.SetCreatedBy(*v)
+	}
+	return _u
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (_u *JobPostingUpdateOne) ClearCreatedBy() *JobPostingUpdateOne {
+	_u.mutation.ClearCreatedBy()
 	return _u
 }
 
@@ -2761,6 +2812,11 @@ func (_u *JobPostingUpdateOne) check() error {
 			return &ValidationError{Name: "company_id", err: fmt.Errorf(`ent: validator failed for field "JobPosting.company_id": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.CreatedBy(); ok {
+		if err := jobposting.CreatedByValidator(v); err != nil {
+			return &ValidationError{Name: "created_by", err: fmt.Errorf(`ent: validator failed for field "JobPosting.created_by": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Title(); ok {
 		if err := jobposting.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "JobPosting.title": %w`, err)}
@@ -2956,6 +3012,12 @@ func (_u *JobPostingUpdateOne) sqlSave(ctx context.Context) (_node *JobPosting, 
 	}
 	if value, ok := _u.mutation.ApplyURL(); ok {
 		_spec.SetField(jobposting.FieldApplyURL, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.CreatedBy(); ok {
+		_spec.SetField(jobposting.FieldCreatedBy, field.TypeString, value)
+	}
+	if _u.mutation.CreatedByCleared() {
+		_spec.ClearField(jobposting.FieldCreatedBy, field.TypeString)
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(jobposting.FieldTitle, field.TypeString, value)

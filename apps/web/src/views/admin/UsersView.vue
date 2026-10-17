@@ -12,7 +12,6 @@ import AppInput from '@/components/AppInput.vue'
 import AppModal from '@/components/AppModal.vue'
 import AppPagination from '@/components/AppPagination.vue'
 import AppSelect from '@/components/AppSelect.vue'
-import PageHeader from '@/components/PageHeader.vue'
 import { useAdminRefresh } from '@/composables/useAdminRefresh'
 import { useAsync } from '@/composables/useAsync'
 import { useToastStore } from '@/stores/toast'
@@ -189,11 +188,6 @@ async function submitDelete() {
 
 <template>
   <div>
-    <PageHeader
-      title="用户管理"
-      :description="`管理注册用户、角色与登录状态，共 ${formatNumber(data?.total ?? 0)} 位用户`"
-    />
-
     <!-- 筛选 -->
     <div class="card mb-5 flex flex-wrap items-center gap-3 p-4">
       <div class="min-w-[240px] flex-1">
@@ -218,6 +212,7 @@ async function submitDelete() {
             { value: 'admin', label: '管理员' },
             { value: 'reviewer', label: '审核员' },
             { value: 'user', label: '用户' },
+            { value: 'system', label: '系统' },
           ]"
         />
       </div>
@@ -268,8 +263,14 @@ async function submitDelete() {
               size="sm"
             />
             <div class="min-w-0">
-              <p class="truncate text-[13.5px] font-medium text-ink-900">{{ user.email }}</p>
-              <p class="mt-0.5 truncate text-[12.5px] text-ink-400">{{ user.nickname }}</p>
+              <p class="truncate text-[13.5px] font-medium text-ink-900">
+                {{ user.email || '系统身份（无邮箱）' }}
+              </p>
+              <p class="mt-0.5 flex items-center gap-1.5 truncate text-[12.5px] text-ink-400">
+                <span class="truncate">{{ user.nickname }}</span>
+                <!-- 系统机器身份：可见但不可操作（后端也会拒绝任何写操作） -->
+                <AppBadge v-if="user.kind === 'system'" tone="teal" size="sm">系统</AppBadge>
+              </p>
             </div>
           </div>
         </td>
@@ -312,6 +313,7 @@ async function submitDelete() {
             </RouterLink>
 
             <button
+              v-if="user.kind !== 'system'"
               type="button"
               class="flex size-8 items-center justify-center rounded-lg border border-ink-200 text-ink-500 transition hover:border-brand-300 hover:text-brand-600 disabled:opacity-50"
               :disabled="busyId === user.id"
@@ -322,6 +324,7 @@ async function submitDelete() {
             </button>
 
             <button
+              v-if="user.kind !== 'system'"
               type="button"
               class="flex size-8 items-center justify-center rounded-lg border border-ink-200 text-ink-500 transition hover:border-brand-300 hover:text-brand-600"
               title="重置密码"
@@ -331,6 +334,7 @@ async function submitDelete() {
             </button>
 
             <button
+              v-if="user.kind !== 'system'"
               type="button"
               class="flex size-8 items-center justify-center rounded-lg border border-ink-200 text-ink-500 transition hover:border-red-300 hover:text-red-600"
               title="删除用户"
@@ -338,6 +342,8 @@ async function submitDelete() {
             >
               <AppIcon name="trash" :size="15" />
             </button>
+
+            <span v-if="user.kind === 'system'" class="text-[11.5px] text-ink-400">不可修改</span>
           </div>
         </td>
       </tr>

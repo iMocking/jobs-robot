@@ -133,6 +133,20 @@ func (_c *JobPostingCreate) SetCompanyID(v string) *JobPostingCreate {
 	return _c
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (_c *JobPostingCreate) SetCreatedBy(v string) *JobPostingCreate {
+	_c.mutation.SetCreatedBy(v)
+	return _c
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (_c *JobPostingCreate) SetNillableCreatedBy(v *string) *JobPostingCreate {
+	if v != nil {
+		_c.SetCreatedBy(*v)
+	}
+	return _c
+}
+
 // SetTitle sets the "title" field.
 func (_c *JobPostingCreate) SetTitle(v string) *JobPostingCreate {
 	_c.mutation.SetTitle(v)
@@ -1130,6 +1144,11 @@ func (_c *JobPostingCreate) check() error {
 			return &ValidationError{Name: "company_id", err: fmt.Errorf(`ent: validator failed for field "JobPosting.company_id": %w`, err)}
 		}
 	}
+	if v, ok := _c.mutation.CreatedBy(); ok {
+		if err := jobposting.CreatedByValidator(v); err != nil {
+			return &ValidationError{Name: "created_by", err: fmt.Errorf(`ent: validator failed for field "JobPosting.created_by": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "JobPosting.title"`)}
 	}
@@ -1446,6 +1465,10 @@ func (_c *JobPostingCreate) createSpec() (*JobPosting, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ApplyURL(); ok {
 		_spec.SetField(jobposting.FieldApplyURL, field.TypeString, value)
 		_node.ApplyURL = value
+	}
+	if value, ok := _c.mutation.CreatedBy(); ok {
+		_spec.SetField(jobposting.FieldCreatedBy, field.TypeString, value)
+		_node.CreatedBy = &value
 	}
 	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(jobposting.FieldTitle, field.TypeString, value)

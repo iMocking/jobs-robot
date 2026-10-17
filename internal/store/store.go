@@ -98,7 +98,32 @@ func (s *Store) Migrate(ctx context.Context) error {
 	); err != nil {
 		return fmt.Errorf("执行数据库迁移失败: %w", err)
 	}
+	if err := s.ensurePartialUniqueIndexes(ctx); err != nil {
+		return err
+	}
 	slog.Info("数据库迁移完成")
+	return nil
+}
+
+// ensurePartialUniqueIndexes 清理「邮箱全表唯一」的旧索引。
+//
+// 背景：users.email 改为 PostgreSQL 部分唯一索引（where email <> ”），
+// 因为系统机器身份（爬虫、邮件机器人）的 email 为空，全表唯一索引
+// 只允许存在一个空串，第二个系统身份就插不进去。
+//
+// ent 生成的 user_email / user_system_key 已经是部分唯一索引；但旧库里的
+// users_email_key（field.Unique() 的产物）不会因为 WithDropIndex(false) 被删除，
+// 必须在这里显式清掉，否则系统身份插入会撞上它。语句幂等，重复执行无副作用。
+func (s *Store) ensurePartialUniqueIndexes(ctx context.Context) error {
+	legacy := []string{
+		`DROP INDEX IF EXISTS users_email_key`,
+		`DROP INDEX IF EXISTS users_system_key_key`,
+	}
+	for _, stmt := range legacy {
+		if _, err := s.sqlDB.ExecContext(ctx, stmt); err != nil {
+			return fmt.Errorf("清理旧唯一索引失败（%s）: %w", stmt, err)
+		}
+	}
 	return nil
 }
 

@@ -57,9 +57,53 @@ func (_c *UserCreate) SetEmail(v string) *UserCreate {
 	return _c
 }
 
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (_c *UserCreate) SetNillableEmail(v *string) *UserCreate {
+	if v != nil {
+		_c.SetEmail(*v)
+	}
+	return _c
+}
+
 // SetPasswordHash sets the "password_hash" field.
 func (_c *UserCreate) SetPasswordHash(v string) *UserCreate {
 	_c.mutation.SetPasswordHash(v)
+	return _c
+}
+
+// SetNillablePasswordHash sets the "password_hash" field if the given value is not nil.
+func (_c *UserCreate) SetNillablePasswordHash(v *string) *UserCreate {
+	if v != nil {
+		_c.SetPasswordHash(*v)
+	}
+	return _c
+}
+
+// SetKind sets the "kind" field.
+func (_c *UserCreate) SetKind(v user.Kind) *UserCreate {
+	_c.mutation.SetKind(v)
+	return _c
+}
+
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (_c *UserCreate) SetNillableKind(v *user.Kind) *UserCreate {
+	if v != nil {
+		_c.SetKind(*v)
+	}
+	return _c
+}
+
+// SetSystemKey sets the "system_key" field.
+func (_c *UserCreate) SetSystemKey(v string) *UserCreate {
+	_c.mutation.SetSystemKey(v)
+	return _c
+}
+
+// SetNillableSystemKey sets the "system_key" field if the given value is not nil.
+func (_c *UserCreate) SetNillableSystemKey(v *string) *UserCreate {
+	if v != nil {
+		_c.SetSystemKey(*v)
+	}
 	return _c
 }
 
@@ -375,6 +419,22 @@ func (_c *UserCreate) defaults() {
 		v := user.DefaultUpdateTime()
 		_c.mutation.SetUpdateTime(v)
 	}
+	if _, ok := _c.mutation.Email(); !ok {
+		v := user.DefaultEmail
+		_c.mutation.SetEmail(v)
+	}
+	if _, ok := _c.mutation.PasswordHash(); !ok {
+		v := user.DefaultPasswordHash
+		_c.mutation.SetPasswordHash(v)
+	}
+	if _, ok := _c.mutation.Kind(); !ok {
+		v := user.DefaultKind
+		_c.mutation.SetKind(v)
+	}
+	if _, ok := _c.mutation.SystemKey(); !ok {
+		v := user.DefaultSystemKey
+		_c.mutation.SetSystemKey(v)
+	}
 	if _, ok := _c.mutation.Nickname(); !ok {
 		v := user.DefaultNickname
 		_c.mutation.SetNickname(v)
@@ -443,6 +503,22 @@ func (_c *UserCreate) check() error {
 	if v, ok := _c.mutation.PasswordHash(); ok {
 		if err := user.PasswordHashValidator(v); err != nil {
 			return &ValidationError{Name: "password_hash", err: fmt.Errorf(`ent: validator failed for field "User.password_hash": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.Kind(); !ok {
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "User.kind"`)}
+	}
+	if v, ok := _c.mutation.Kind(); ok {
+		if err := user.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "User.kind": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.SystemKey(); !ok {
+		return &ValidationError{Name: "system_key", err: errors.New(`ent: missing required field "User.system_key"`)}
+	}
+	if v, ok := _c.mutation.SystemKey(); ok {
+		if err := user.SystemKeyValidator(v); err != nil {
+			return &ValidationError{Name: "system_key", err: fmt.Errorf(`ent: validator failed for field "User.system_key": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Nickname(); !ok {
@@ -570,6 +646,14 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)
 		_node.PasswordHash = value
+	}
+	if value, ok := _c.mutation.Kind(); ok {
+		_spec.SetField(user.FieldKind, field.TypeEnum, value)
+		_node.Kind = value
+	}
+	if value, ok := _c.mutation.SystemKey(); ok {
+		_spec.SetField(user.FieldSystemKey, field.TypeString, value)
+		_node.SystemKey = value
 	}
 	if value, ok := _c.mutation.Nickname(); ok {
 		_spec.SetField(user.FieldNickname, field.TypeString, value)

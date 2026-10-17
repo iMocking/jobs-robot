@@ -88,7 +88,7 @@ func (s *Scheduler) runCrawlAll() {
 
 	started := time.Now()
 	slog.Info("开始执行定时抓取")
-	runs, err := s.svc.Crawl.CrawlAll(ctx, "schedule")
+	runs, err := s.svc.Crawl.CrawlAll(ctx, "schedule", service.SystemActorFor(service.SystemKeyCrawler))
 	if err != nil {
 		slog.Error("定时抓取执行失败", "error", err)
 		return

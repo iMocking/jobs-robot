@@ -13,7 +13,6 @@ import AppModal from '@/components/AppModal.vue'
 import AppPagination from '@/components/AppPagination.vue'
 import AppSelect from '@/components/AppSelect.vue'
 import AppSwitch from '@/components/AppSwitch.vue'
-import PageHeader from '@/components/PageHeader.vue'
 import { useAdminRefresh } from '@/composables/useAdminRefresh'
 import { useAsync } from '@/composables/useAsync'
 import { useDictionaryStore } from '@/stores/dictionaries'
@@ -316,22 +315,6 @@ async function submitCreate() {
 
 <template>
   <div>
-    <PageHeader
-      title="公司管理"
-      description="这些公司就是岗位的来源官网，招聘入口地址决定了能抓到什么。"
-    >
-      <template #actions>
-        <AppButton variant="secondary" :loading="runAllLoading" @click="runAll">
-          <AppIcon name="refresh" :size="16" />
-          全量抓取
-        </AppButton>
-        <AppButton @click="openCreate">
-          <AppIcon name="plus" :size="16" />
-          新增公司
-        </AppButton>
-      </template>
-    </PageHeader>
-
     <!-- 筛选：只筛选已入库的数据，不触发抓取 -->
     <div class="card mb-5 p-5">
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -348,6 +331,17 @@ async function submitCreate() {
           :options="crawlOptions"
           placeholder="全部抓取状态"
         />
+      </div>
+
+      <div class="mt-4 flex flex-wrap items-center justify-end gap-2 border-t border-ink-100 pt-4">
+        <AppButton variant="secondary" :loading="runAllLoading" @click="runAll">
+          <AppIcon name="refresh" :size="16" />
+          全量抓取
+        </AppButton>
+        <AppButton @click="openCreate">
+          <AppIcon name="plus" :size="16" />
+          新增公司
+        </AppButton>
       </div>
     </div>
 

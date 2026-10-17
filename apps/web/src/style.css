@@ -100,10 +100,99 @@
     @apply bg-page font-sans text-ink-900 antialiased;
   }
 
-  /* 键盘可达性：统一焦点环，鼠标点击不出现 */
-  :focus-visible {
+  /*
+   * 键盘可达性：统一焦点环，鼠标点击不出现。
+   * 输入型元素（input / textarea / select）除外 —— 它们聚焦时由各自组件
+   * 的容器样式提供柔和提示（如 AppInput 的 focus-within 边框高亮），
+   * 若再套上这里的矩形 ring，点击输入框会出现生硬的选中框，破坏 UI 一致性。
+   * 按钮、链接等交互元素保留焦点环，键盘导航的可达性不受影响。
+   */
+  :focus-visible:not(input):not(textarea):not(select) {
     @apply outline-none ring-2 ring-brand-500/60 ring-offset-1 ring-offset-white;
   }
+
+  /*
+   * JobHub 光标系统 v1（用户指定，SVG 绘制）：统一「浅蓝渐变→品牌蓝填充 +
+   * 白色描边」家族语言（与参考图箭头风格一致），覆盖常规光标全部状态：
+   * 默认箭头 / 手型可点击 / I-beam 文本 / 复制加号 / 四向移动 / 红圈禁止 /
+   * 抓取握紧 / 进行中 / 等待 / 四向缩放 / 十字准星 / 放大缩小。
+   * 每枚光标为 24×24 SVG（public/cursors/*.svg），热点精确落位；
+   * url 加载失败时自动回退到右侧系统关键字，不影响可用性。
+   */
+  :root {
+    --cur-arrow: url('/cursors/arrow.svg') 5 5;
+    --cur-pointer: url('/cursors/pointer.svg') 18 7;
+    --cur-text: url('/cursors/text.svg') 16 16;
+    --cur-copy: url('/cursors/copy.svg') 5 5;
+    --cur-move: url('/cursors/move.svg') 16 16;
+    --cur-not-allowed: url('/cursors/not-allowed.svg') 16 16;
+    --cur-grab: url('/cursors/grab.svg') 18 7;
+    --cur-grabbing: url('/cursors/grabbing.svg') 16 16;
+    --cur-progress: url('/cursors/progress.svg') 5 5;
+    --cur-wait: url('/cursors/wait.svg') 16 16;
+    --cur-resize-ew: url('/cursors/resize-ew.svg') 16 16;
+    --cur-resize-ns: url('/cursors/resize-ns.svg') 16 16;
+    --cur-resize-nesw: url('/cursors/resize-nesw.svg') 16 16;
+    --cur-resize-nwse: url('/cursors/resize-nwse.svg') 16 16;
+    --cur-crosshair: url('/cursors/crosshair.svg') 16 16;
+    --cur-zoom-in: url('/cursors/zoom-in.svg') 15 15;
+    --cur-zoom-out: url('/cursors/zoom-out.svg') 15 15;
+    cursor: var(--cur-arrow), auto;
+  }
+
+  button:not(:disabled),
+  [role='button']:not(:disabled),
+  [role='menuitem']:not(:disabled),
+  summary:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled),
+  input[type='range']:not(:disabled),
+  label[for] {
+    cursor: var(--cur-pointer), pointer;
+  }
+
+  input:not([type]),
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='number'],
+  input[type='tel'],
+  input[type='url'],
+  input[type='search'],
+  textarea {
+    cursor: var(--cur-text), text;
+  }
+
+  :disabled,
+  [aria-disabled='true'] {
+    cursor: var(--cur-not-allowed), not-allowed;
+  }
+
+  /* textarea / 原生缩放手柄使用对角缩放光标 */
+  ::-webkit-resizer {
+    cursor: var(--cur-resize-nwse), nwse-resize;
+  }
+
+  /* 按状态使用的工具类（组件按需添加；覆盖同名 Tailwind cursor-* 统一为自定义图标） */
+  .cursor-default { cursor: var(--cur-arrow), auto; }
+  .cursor-pointer { cursor: var(--cur-pointer), pointer; }
+  .cursor-text { cursor: var(--cur-text), text; }
+  .cursor-copy { cursor: var(--cur-copy), copy; }
+  .cursor-move { cursor: var(--cur-move), move; }
+  .cursor-not-allowed { cursor: var(--cur-not-allowed), not-allowed; }
+  .cursor-grab { cursor: var(--cur-grab), grab; }
+  .cursor-grabbing { cursor: var(--cur-grabbing), grabbing; }
+  .cursor-progress { cursor: var(--cur-progress), progress; }
+  .cursor-wait { cursor: var(--cur-wait), wait; }
+  .cursor-resize-ew { cursor: var(--cur-resize-ew), ew-resize; }
+  .cursor-resize-ns { cursor: var(--cur-resize-ns), ns-resize; }
+  .cursor-resize-nesw { cursor: var(--cur-resize-nesw), nesw-resize; }
+  .cursor-resize-nwse { cursor: var(--cur-resize-nwse), nwse-resize; }
+  .cursor-crosshair { cursor: var(--cur-crosshair), crosshair; }
+  .cursor-zoom-in { cursor: var(--cur-zoom-in), zoom-in; }
+  .cursor-zoom-out { cursor: var(--cur-zoom-out), zoom-out; }
 
   ::selection {
     @apply bg-brand-600/18;
@@ -112,6 +201,37 @@
   /* 数字对齐：统计卡与表格里的金额/计数用等宽数字更整齐 */
   .tabular {
     font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * 全局极窄滚动条：竖向/横向均为 4px，细条 + 圆角 + 透明轨道。
+   * Firefox 用 scrollbar-width: thin 兜底（不支持更细的自定义宽度）。
+   */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink-300) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-ink-300);
+    border-radius: 9999px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-ink-400);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
   }
 }
 

@@ -23,6 +23,10 @@ const (
 	FieldEmail = "email"
 	// FieldPasswordHash holds the string denoting the password_hash field in the database.
 	FieldPasswordHash = "password_hash"
+	// FieldKind holds the string denoting the kind field in the database.
+	FieldKind = "kind"
+	// FieldSystemKey holds the string denoting the system_key field in the database.
+	FieldSystemKey = "system_key"
 	// FieldNickname holds the string denoting the nickname field in the database.
 	FieldNickname = "nickname"
 	// FieldAvatarURL holds the string denoting the avatar_url field in the database.
@@ -91,6 +95,8 @@ var Columns = []string{
 	FieldUpdateTime,
 	FieldEmail,
 	FieldPasswordHash,
+	FieldKind,
+	FieldSystemKey,
 	FieldNickname,
 	FieldAvatarURL,
 	FieldPhone,
@@ -125,10 +131,18 @@ var (
 	DefaultUpdateTime func() time.Time
 	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
 	UpdateDefaultUpdateTime func() time.Time
+	// DefaultEmail holds the default value on creation for the "email" field.
+	DefaultEmail string
 	// EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	EmailValidator func(string) error
+	// DefaultPasswordHash holds the default value on creation for the "password_hash" field.
+	DefaultPasswordHash string
 	// PasswordHashValidator is a validator for the "password_hash" field. It is called by the builders before save.
 	PasswordHashValidator func(string) error
+	// DefaultSystemKey holds the default value on creation for the "system_key" field.
+	DefaultSystemKey string
+	// SystemKeyValidator is a validator for the "system_key" field. It is called by the builders before save.
+	SystemKeyValidator func(string) error
 	// DefaultNickname holds the default value on creation for the "nickname" field.
 	DefaultNickname string
 	// NicknameValidator is a validator for the "nickname" field. It is called by the builders before save.
@@ -166,6 +180,32 @@ var (
 	// IDValidator is a validator for the "id" field. It is called by the builders before save.
 	IDValidator func(string) error
 )
+
+// Kind defines the type for the "kind" enum field.
+type Kind string
+
+// KindHuman is the default value of the Kind enum.
+const DefaultKind = KindHuman
+
+// Kind values.
+const (
+	KindHuman  Kind = "human"
+	KindSystem Kind = "system"
+)
+
+func (k Kind) String() string {
+	return string(k)
+}
+
+// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
+func KindValidator(k Kind) error {
+	switch k {
+	case KindHuman, KindSystem:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for kind field: %q", k)
+	}
+}
 
 // Status defines the type for the "status" enum field.
 type Status string
@@ -221,6 +261,16 @@ func ByEmail(opts ...sql.OrderTermOption) OrderOption {
 // ByPasswordHash orders the results by the password_hash field.
 func ByPasswordHash(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPasswordHash, opts...).ToFunc()
+}
+
+// ByKind orders the results by the kind field.
+func ByKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKind, opts...).ToFunc()
+}
+
+// BySystemKey orders the results by the system_key field.
+func BySystemKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSystemKey, opts...).ToFunc()
 }
 
 // ByNickname orders the results by the nickname field.

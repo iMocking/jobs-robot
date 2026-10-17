@@ -32,6 +32,11 @@ func (CrawlRun) Fields() []ent.Field {
 		field.Enum("trigger").
 			Values("schedule", "manual", "retry").
 			Default("schedule"),
+		field.String("triggered_by").
+			MaxLen(ulidid.Length).
+			Optional().
+			Nillable().
+			Comment("触发者用户 ID：手动=管理员，定时/自动=爬虫系统身份"),
 		field.Enum("status").
 			Values("running", "success", "partial", "failed", "skipped").
 			Default("running").

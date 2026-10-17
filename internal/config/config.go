@@ -254,10 +254,38 @@ type AuthRateLimit struct {
 
 // Mail 是邮件发送配置。
 type Mail struct {
-	Driver      string `yaml:"driver"       env:"MAIL_DRIVER"` // console | smtp
-	FromName    string `yaml:"from_name"    env:"MAIL_FROM_NAME"`
-	FromAddress string `yaml:"from_address" env:"MAIL_FROM_ADDRESS"`
-	SMTP        SMTP   `yaml:"smtp"`
+	Driver string `yaml:"driver" env:"MAIL_DRIVER"` // console | smtp
+	// SystemFromName 是所有「系统自动邮件」的发件人显示名（品牌化的系统通知名）。
+	//
+	// 它与 FromName 分开：FromName 是邮件通道的通用兜底显示名，
+	// SystemFromName 才是收件人在收件箱里看到的系统通知身份。
+	// 为空时回退 FromName，两者都为空再用 no-reply。
+	SystemFromName string `yaml:"system_from_name" env:"MAIL_SYSTEM_FROM_NAME"`
+	FromName       string `yaml:"from_name"        env:"MAIL_FROM_NAME"`
+	FromAddress    string `yaml:"from_address"     env:"MAIL_FROM_ADDRESS"`
+	SMTP           SMTP   `yaml:"smtp"`
+}
+
+// DefaultSystemFromName 是系统邮件的默认发件人显示名。
+//
+// 中间是 U+00B7 中点（·），两侧各一个空格；不是 ASCII 句点。
+const DefaultSystemFromName = "直招好工作 · 系统通知"
+
+// fallbackFromName 是 system_from_name 与 from_name 都为空时的安全兜底。
+const fallbackFromName = "no-reply"
+
+// EffectiveSystemFromName 解析系统邮件实际使用的发件人显示名。
+//
+// 优先级：mail.system_from_name > mail.from_name > no-reply。
+// 单独做成方法而不是各调用点自己判空：From 头、后台设置页、测试发信必须同源。
+func (m Mail) EffectiveSystemFromName() string {
+	if name := strings.TrimSpace(m.SystemFromName); name != "" {
+		return name
+	}
+	if name := strings.TrimSpace(m.FromName); name != "" {
+		return name
+	}
+	return fallbackFromName
 }
 
 // SMTP 是 SMTP 服务参数。
@@ -484,10 +512,11 @@ func Default() *Config {
 			},
 		},
 		Mail: Mail{
-			Driver:      "console",
-			FromName:    "直招好工作",
-			FromAddress: "no-reply@jobs-robot.local",
-			SMTP:        SMTP{Port: 465, TLS: true},
+			Driver:         "console",
+			SystemFromName: DefaultSystemFromName,
+			FromName:       "直招好工作",
+			FromAddress:    "no-reply@jobs-robot.local",
+			SMTP:           SMTP{Port: 465, TLS: true},
 		},
 		Crawler: Crawler{
 			Enabled:         true,

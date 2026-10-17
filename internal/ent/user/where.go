@@ -85,6 +85,11 @@ func PasswordHash(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldPasswordHash, v))
 }
 
+// SystemKey applies equality check predicate on the "system_key" field. It's identical to SystemKeyEQ.
+func SystemKey(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldSystemKey, v))
+}
+
 // Nickname applies equality check predicate on the "nickname" field. It's identical to NicknameEQ.
 func Nickname(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldNickname, v))
@@ -363,6 +368,91 @@ func PasswordHashEqualFold(v string) predicate.User {
 // PasswordHashContainsFold applies the ContainsFold predicate on the "password_hash" field.
 func PasswordHashContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldPasswordHash, v))
+}
+
+// KindEQ applies the EQ predicate on the "kind" field.
+func KindEQ(v Kind) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldKind, v))
+}
+
+// KindNEQ applies the NEQ predicate on the "kind" field.
+func KindNEQ(v Kind) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldKind, v))
+}
+
+// KindIn applies the In predicate on the "kind" field.
+func KindIn(vs ...Kind) predicate.User {
+	return predicate.User(sql.FieldIn(FieldKind, vs...))
+}
+
+// KindNotIn applies the NotIn predicate on the "kind" field.
+func KindNotIn(vs ...Kind) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldKind, vs...))
+}
+
+// SystemKeyEQ applies the EQ predicate on the "system_key" field.
+func SystemKeyEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldSystemKey, v))
+}
+
+// SystemKeyNEQ applies the NEQ predicate on the "system_key" field.
+func SystemKeyNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldSystemKey, v))
+}
+
+// SystemKeyIn applies the In predicate on the "system_key" field.
+func SystemKeyIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldSystemKey, vs...))
+}
+
+// SystemKeyNotIn applies the NotIn predicate on the "system_key" field.
+func SystemKeyNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldSystemKey, vs...))
+}
+
+// SystemKeyGT applies the GT predicate on the "system_key" field.
+func SystemKeyGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldSystemKey, v))
+}
+
+// SystemKeyGTE applies the GTE predicate on the "system_key" field.
+func SystemKeyGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldSystemKey, v))
+}
+
+// SystemKeyLT applies the LT predicate on the "system_key" field.
+func SystemKeyLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldSystemKey, v))
+}
+
+// SystemKeyLTE applies the LTE predicate on the "system_key" field.
+func SystemKeyLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldSystemKey, v))
+}
+
+// SystemKeyContains applies the Contains predicate on the "system_key" field.
+func SystemKeyContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldSystemKey, v))
+}
+
+// SystemKeyHasPrefix applies the HasPrefix predicate on the "system_key" field.
+func SystemKeyHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldSystemKey, v))
+}
+
+// SystemKeyHasSuffix applies the HasSuffix predicate on the "system_key" field.
+func SystemKeyHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldSystemKey, v))
+}
+
+// SystemKeyEqualFold applies the EqualFold predicate on the "system_key" field.
+func SystemKeyEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldSystemKey, v))
+}
+
+// SystemKeyContainsFold applies the ContainsFold predicate on the "system_key" field.
+func SystemKeyContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldSystemKey, v))
 }
 
 // NicknameEQ applies the EQ predicate on the "nickname" field.

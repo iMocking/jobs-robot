@@ -106,6 +106,26 @@ func (_u *CompanyUpdate) SetNillableDiscoveryURL(v *string) *CompanyUpdate {
 	return _u
 }
 
+// SetDiscoveredBy sets the "discovered_by" field.
+func (_u *CompanyUpdate) SetDiscoveredBy(v string) *CompanyUpdate {
+	_u.mutation.SetDiscoveredBy(v)
+	return _u
+}
+
+// SetNillableDiscoveredBy sets the "discovered_by" field if the given value is not nil.
+func (_u *CompanyUpdate) SetNillableDiscoveredBy(v *string) *CompanyUpdate {
+	if v != nil {
+		_u.SetDiscoveredBy(*v)
+	}
+	return _u
+}
+
+// ClearDiscoveredBy clears the value of the "discovered_by" field.
+func (_u *CompanyUpdate) ClearDiscoveredBy() *CompanyUpdate {
+	_u.mutation.ClearDiscoveredBy()
+	return _u
+}
+
 // SetLogoURL sets the "logo_url" field.
 func (_u *CompanyUpdate) SetLogoURL(v string) *CompanyUpdate {
 	_u.mutation.SetLogoURL(v)
@@ -633,6 +653,11 @@ func (_u *CompanyUpdate) check() error {
 			return &ValidationError{Name: "discovery_url", err: fmt.Errorf(`ent: validator failed for field "Company.discovery_url": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.DiscoveredBy(); ok {
+		if err := company.DiscoveredByValidator(v); err != nil {
+			return &ValidationError{Name: "discovered_by", err: fmt.Errorf(`ent: validator failed for field "Company.discovered_by": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.LogoURL(); ok {
 		if err := company.LogoURLValidator(v); err != nil {
 			return &ValidationError{Name: "logo_url", err: fmt.Errorf(`ent: validator failed for field "Company.logo_url": %w`, err)}
@@ -725,6 +750,12 @@ func (_u *CompanyUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.DiscoveryURL(); ok {
 		_spec.SetField(company.FieldDiscoveryURL, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.DiscoveredBy(); ok {
+		_spec.SetField(company.FieldDiscoveredBy, field.TypeString, value)
+	}
+	if _u.mutation.DiscoveredByCleared() {
+		_spec.ClearField(company.FieldDiscoveredBy, field.TypeString)
 	}
 	if value, ok := _u.mutation.LogoURL(); ok {
 		_spec.SetField(company.FieldLogoURL, field.TypeString, value)
@@ -1005,6 +1036,26 @@ func (_u *CompanyUpdateOne) SetNillableDiscoveryURL(v *string) *CompanyUpdateOne
 	if v != nil {
 		_u.SetDiscoveryURL(*v)
 	}
+	return _u
+}
+
+// SetDiscoveredBy sets the "discovered_by" field.
+func (_u *CompanyUpdateOne) SetDiscoveredBy(v string) *CompanyUpdateOne {
+	_u.mutation.SetDiscoveredBy(v)
+	return _u
+}
+
+// SetNillableDiscoveredBy sets the "discovered_by" field if the given value is not nil.
+func (_u *CompanyUpdateOne) SetNillableDiscoveredBy(v *string) *CompanyUpdateOne {
+	if v != nil {
+		_u.SetDiscoveredBy(*v)
+	}
+	return _u
+}
+
+// ClearDiscoveredBy clears the value of the "discovered_by" field.
+func (_u *CompanyUpdateOne) ClearDiscoveredBy() *CompanyUpdateOne {
+	_u.mutation.ClearDiscoveredBy()
 	return _u
 }
 
@@ -1548,6 +1599,11 @@ func (_u *CompanyUpdateOne) check() error {
 			return &ValidationError{Name: "discovery_url", err: fmt.Errorf(`ent: validator failed for field "Company.discovery_url": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.DiscoveredBy(); ok {
+		if err := company.DiscoveredByValidator(v); err != nil {
+			return &ValidationError{Name: "discovered_by", err: fmt.Errorf(`ent: validator failed for field "Company.discovered_by": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.LogoURL(); ok {
 		if err := company.LogoURLValidator(v); err != nil {
 			return &ValidationError{Name: "logo_url", err: fmt.Errorf(`ent: validator failed for field "Company.logo_url": %w`, err)}
@@ -1657,6 +1713,12 @@ func (_u *CompanyUpdateOne) sqlSave(ctx context.Context) (_node *Company, err er
 	}
 	if value, ok := _u.mutation.DiscoveryURL(); ok {
 		_spec.SetField(company.FieldDiscoveryURL, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.DiscoveredBy(); ok {
+		_spec.SetField(company.FieldDiscoveredBy, field.TypeString, value)
+	}
+	if _u.mutation.DiscoveredByCleared() {
+		_spec.ClearField(company.FieldDiscoveredBy, field.TypeString)
 	}
 	if value, ok := _u.mutation.LogoURL(); ok {
 		_spec.SetField(company.FieldLogoURL, field.TypeString, value)

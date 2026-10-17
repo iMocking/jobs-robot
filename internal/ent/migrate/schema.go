@@ -3,6 +3,7 @@
 package migrate
 
 import (
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/schema/field"
 )
@@ -62,6 +63,7 @@ var (
 		{Name: "website", Type: field.TypeString, Size: 512, Default: ""},
 		{Name: "careers_url", Type: field.TypeString, Size: 512, Default: ""},
 		{Name: "discovery_url", Type: field.TypeString, Size: 512, Default: ""},
+		{Name: "discovered_by", Type: field.TypeString, Nullable: true, Size: 26},
 		{Name: "logo_url", Type: field.TypeString, Size: 512, Default: ""},
 		{Name: "industry", Type: field.TypeString, Size: 64, Default: ""},
 		{Name: "sub_industry", Type: field.TypeString, Size: 64, Default: ""},
@@ -97,17 +99,17 @@ var (
 			{
 				Name:    "company_industry",
 				Unique:  false,
-				Columns: []*schema.Column{CompaniesColumns[9]},
+				Columns: []*schema.Column{CompaniesColumns[10]},
 			},
 			{
 				Name:    "company_enabled_crawl_enabled",
 				Unique:  false,
-				Columns: []*schema.Column{CompaniesColumns[17], CompaniesColumns[20]},
+				Columns: []*schema.Column{CompaniesColumns[18], CompaniesColumns[21]},
 			},
 			{
 				Name:    "company_last_crawled_at",
 				Unique:  false,
-				Columns: []*schema.Column{CompaniesColumns[25]},
+				Columns: []*schema.Column{CompaniesColumns[26]},
 			},
 		},
 	}
@@ -150,6 +152,7 @@ var (
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "trigger", Type: field.TypeEnum, Enums: []string{"schedule", "manual", "retry"}, Default: "schedule"},
+		{Name: "triggered_by", Type: field.TypeString, Nullable: true, Size: 26},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"running", "success", "partial", "failed", "skipped"}, Default: "running"},
 		{Name: "skip_reason", Type: field.TypeString, Size: 255, Default: ""},
 		{Name: "started_at", Type: field.TypeTime},
@@ -176,7 +179,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "crawl_runs_companies_crawl_runs",
-				Columns:    []*schema.Column{CrawlRunsColumns[20]},
+				Columns:    []*schema.Column{CrawlRunsColumns[21]},
 				RefColumns: []*schema.Column{CompaniesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -185,12 +188,12 @@ var (
 			{
 				Name:    "crawlrun_company_id_started_at",
 				Unique:  false,
-				Columns: []*schema.Column{CrawlRunsColumns[20], CrawlRunsColumns[6]},
+				Columns: []*schema.Column{CrawlRunsColumns[21], CrawlRunsColumns[7]},
 			},
 			{
 				Name:    "crawlrun_status",
 				Unique:  false,
-				Columns: []*schema.Column{CrawlRunsColumns[4]},
+				Columns: []*schema.Column{CrawlRunsColumns[5]},
 			},
 		},
 	}
@@ -205,6 +208,7 @@ var (
 		{Name: "source_job_id", Type: field.TypeString, Size: 128, Default: ""},
 		{Name: "is_direct_hire", Type: field.TypeBool, Default: true},
 		{Name: "apply_url", Type: field.TypeString, Size: 1024, Default: ""},
+		{Name: "created_by", Type: field.TypeString, Nullable: true, Size: 26},
 		{Name: "title", Type: field.TypeString, Size: 255},
 		{Name: "job_code", Type: field.TypeString, Size: 64, Default: ""},
 		{Name: "category", Type: field.TypeString, Size: 64, Default: ""},
@@ -266,13 +270,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "job_postings_companies_jobs",
-				Columns:    []*schema.Column{JobPostingsColumns[59]},
+				Columns:    []*schema.Column{JobPostingsColumns[60]},
 				RefColumns: []*schema.Column{CompaniesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "job_postings_users_reviewed_jobs",
-				Columns:    []*schema.Column{JobPostingsColumns[60]},
+				Columns:    []*schema.Column{JobPostingsColumns[61]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -281,37 +285,37 @@ var (
 			{
 				Name:    "jobposting_status_published_at",
 				Unique:  false,
-				Columns: []*schema.Column{JobPostingsColumns[55], JobPostingsColumns[41]},
+				Columns: []*schema.Column{JobPostingsColumns[56], JobPostingsColumns[42]},
 			},
 			{
 				Name:    "jobposting_company_id_status",
 				Unique:  false,
-				Columns: []*schema.Column{JobPostingsColumns[59], JobPostingsColumns[55]},
+				Columns: []*schema.Column{JobPostingsColumns[60], JobPostingsColumns[56]},
 			},
 			{
 				Name:    "jobposting_content_hash",
 				Unique:  false,
-				Columns: []*schema.Column{JobPostingsColumns[47]},
+				Columns: []*schema.Column{JobPostingsColumns[48]},
 			},
 			{
 				Name:    "jobposting_category",
 				Unique:  false,
-				Columns: []*schema.Column{JobPostingsColumns[11]},
+				Columns: []*schema.Column{JobPostingsColumns[12]},
 			},
 			{
 				Name:    "jobposting_industry",
 				Unique:  false,
-				Columns: []*schema.Column{JobPostingsColumns[12]},
+				Columns: []*schema.Column{JobPostingsColumns[13]},
 			},
 			{
 				Name:    "jobposting_city",
 				Unique:  false,
-				Columns: []*schema.Column{JobPostingsColumns[25]},
+				Columns: []*schema.Column{JobPostingsColumns[26]},
 			},
 			{
 				Name:    "jobposting_last_seen_at",
 				Unique:  false,
-				Columns: []*schema.Column{JobPostingsColumns[45]},
+				Columns: []*schema.Column{JobPostingsColumns[46]},
 			},
 		},
 	}
@@ -404,8 +408,10 @@ var (
 		{Name: "id", Type: field.TypeString, Size: 26},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
-		{Name: "email", Type: field.TypeString, Unique: true, Size: 255},
-		{Name: "password_hash", Type: field.TypeString, Size: 255},
+		{Name: "email", Type: field.TypeString, Size: 255, Default: ""},
+		{Name: "password_hash", Type: field.TypeString, Size: 255, Default: ""},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"human", "system"}, Default: "human"},
+		{Name: "system_key", Type: field.TypeString, Size: 32, Default: ""},
 		{Name: "nickname", Type: field.TypeString, Size: 64, Default: ""},
 		{Name: "avatar_url", Type: field.TypeString, Size: 512, Default: ""},
 		{Name: "phone", Type: field.TypeString, Nullable: true, Size: 32},
@@ -431,7 +437,23 @@ var (
 			{
 				Name:    "user_status",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[8]},
+				Columns: []*schema.Column{UsersColumns[10]},
+			},
+			{
+				Name:    "user_email",
+				Unique:  true,
+				Columns: []*schema.Column{UsersColumns[3]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "email <> ''",
+				},
+			},
+			{
+				Name:    "user_system_key",
+				Unique:  true,
+				Columns: []*schema.Column{UsersColumns[6]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "system_key <> ''",
+				},
 			},
 		},
 	}

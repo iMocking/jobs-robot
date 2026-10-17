@@ -1,0 +1,12 @@
+<batch>
+  <items>
+    <item type="IMAGE" path="/deliverables/jobhub-ui" title="个人中心页" brief="JobHub 直招 C 端个人中心：顶栏 JobHub直招+发现职位/公司库+右上角圆形深蓝头像（白字）下拉（个人中心/账号设置/退出登录），左栏资料卡+菜单（个人资料/账号安全/我的收藏/浏览记录），右栏个人资料表单">
+      <size width="2730" height="1536"/>
+      <asset url="https://aka.doubaocdn.com/s/kzSVXUZ3Fu"/>
+      <source_ids>
+        <source_id>637NFVkO-4KuBVGsfbu-0201</source_id>
+      </source_ids>
+    </item>
+  </items>
+  <frames/>
+</batch>

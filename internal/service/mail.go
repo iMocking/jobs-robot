@@ -28,13 +28,15 @@ const MailPasswordMask = "********"
 
 // MailConfigView 是邮件配置视图。
 type MailConfigView struct {
-	Driver      string `json:"driver"`
-	FromName    string `json:"from_name"`
-	FromAddress string `json:"from_address"`
-	Host        string `json:"host"`
-	Port        int    `json:"port"`
-	Username    string `json:"username"`
-	TLS         bool   `json:"tls"`
+	Driver string `json:"driver"`
+	// SystemFromName 是系统邮件在收件箱中显示的发件人名称。
+	SystemFromName string `json:"system_from_name"`
+	FromName       string `json:"from_name"`
+	FromAddress    string `json:"from_address"`
+	Host           string `json:"host"`
+	Port           int    `json:"port"`
+	Username       string `json:"username"`
+	TLS            bool   `json:"tls"`
 
 	HasPassword  bool   `json:"has_password"`
 	PasswordMask string `json:"password_mask"`
@@ -52,12 +54,14 @@ type MailConfigView struct {
 
 // MailConfigInput 是保存邮件配置的入参。
 type MailConfigInput struct {
-	Driver      string
-	FromName    string
-	FromAddress string
-	Host        string
-	Port        int
-	Username    string
+	Driver string
+	// SystemFromName 为空表示回退到 from_name。
+	SystemFromName string
+	FromName       string
+	FromAddress    string
+	Host           string
+	Port           int
+	Username       string
 	// Password 为空或等于占位符时表示沿用已保存的密码。
 	Password string
 	TLS      *bool
@@ -103,6 +107,10 @@ func decodeMailSetting(cfg *config.Config, value map[string]any) (config.Mail, e
 	if v := mapString(value, "driver"); v != "" {
 		out.Driver = v
 	}
+	if _, ok := value["system_from_name"]; ok {
+		// 允许显式清空：清空后回落 from_name，这是「系统通知名」的合法状态。
+		out.SystemFromName = mapString(value, "system_from_name")
+	}
 	if v := mapString(value, "from_name"); v != "" {
 		out.FromName = v
 	}
@@ -137,14 +145,15 @@ func encodeMailSetting(cfg *config.Config, m config.Mail) (map[string]any, error
 		return nil, err
 	}
 	return map[string]any{
-		"driver":       m.Driver,
-		"from_name":    m.FromName,
-		"from_address": m.FromAddress,
-		"host":         m.SMTP.Host,
-		"port":         m.SMTP.Port,
-		"username":     m.SMTP.Username,
-		"tls":          m.SMTP.TLS,
-		"password_enc": encrypted,
+		"driver":           m.Driver,
+		"system_from_name": m.SystemFromName,
+		"from_name":        m.FromName,
+		"from_address":     m.FromAddress,
+		"host":             m.SMTP.Host,
+		"port":             m.SMTP.Port,
+		"username":         m.SMTP.Username,
+		"tls":              m.SMTP.TLS,
+		"password_enc":     encrypted,
 	}, nil
 }
 
@@ -165,9 +174,10 @@ func (svc *MailService) Save(ctx context.Context, in MailConfigInput, actor Acto
 	}
 
 	next := config.Mail{
-		Driver:      strings.ToLower(strings.TrimSpace(in.Driver)),
-		FromName:    strings.TrimSpace(in.FromName),
-		FromAddress: strings.TrimSpace(in.FromAddress),
+		Driver:         strings.ToLower(strings.TrimSpace(in.Driver)),
+		SystemFromName: strings.TrimSpace(in.SystemFromName),
+		FromName:       strings.TrimSpace(in.FromName),
+		FromAddress:    strings.TrimSpace(in.FromAddress),
 		SMTP: config.SMTP{
 			Host:     strings.TrimSpace(in.Host),
 			Port:     in.Port,
@@ -225,10 +235,13 @@ func (svc *MailService) Save(ctx context.Context, in MailConfigInput, actor Acto
 		return MailConfigView{}, apperr.ErrSettingInvalid.WithMessage("邮件配置无法生效：" + err.Error())
 	}
 	svc.s.Mailer.Swap(mailer)
+	// 发件人显示名跨越投递器热替换保持：新 mailer 也要用系统通知名，而不是配置文件里的旧值。
+	svc.s.Mailer.SetFromName(next.EffectiveSystemFromName())
 
 	// 审计只记录可公开的字段与「密码是否变化」，绝不写入口令本身。
 	svc.s.Audit.Record(ctx, actor, "mail.update", "setting", SettingKeyMailSMTP, map[string]any{
 		"driver":           next.Driver,
+		"system_from_name": next.SystemFromName,
 		"from_address":     next.FromAddress,
 		"host":             next.SMTP.Host,
 		"port":             next.SMTP.Port,
@@ -284,6 +297,7 @@ func (svc *MailService) Revert(ctx context.Context, actor Actor) (MailConfigView
 		return MailConfigView{}, apperr.ErrInternal.WithCause(err)
 	}
 	svc.s.Mailer.Swap(mailer)
+	svc.s.Mailer.SetFromName(svc.s.Cfg.Mail.EffectiveSystemFromName())
 
 	svc.s.Audit.Record(ctx, actor, "mail.revert", "setting", SettingKeyMailSMTP, nil)
 	return svc.toView(ctx, svc.s.Cfg.Mail, false), nil
@@ -343,18 +357,19 @@ func (svc *MailService) persist(ctx context.Context, value map[string]any, actor
 // toView 组装视图，密码只以占位符暴露。
 func (svc *MailService) toView(ctx context.Context, m config.Mail, fromDatabase bool) MailConfigView {
 	view := MailConfigView{
-		Driver:       m.Driver,
-		FromName:     m.FromName,
-		FromAddress:  m.FromAddress,
-		Host:         m.SMTP.Host,
-		Port:         m.SMTP.Port,
-		Username:     m.SMTP.Username,
-		TLS:          m.SMTP.TLS,
-		HasPassword:  m.SMTP.Password != "",
-		PasswordMask: MailPasswordMask,
-		Source:       "config",
-		ActiveDriver: svc.s.Mailer.Name(),
-		Ready:        svc.s.Mailer.Current() != nil,
+		Driver:         m.Driver,
+		SystemFromName: m.SystemFromName,
+		FromName:       m.FromName,
+		FromAddress:    m.FromAddress,
+		Host:           m.SMTP.Host,
+		Port:           m.SMTP.Port,
+		Username:       m.SMTP.Username,
+		TLS:            m.SMTP.TLS,
+		HasPassword:    m.SMTP.Password != "",
+		PasswordMask:   MailPasswordMask,
+		Source:         "config",
+		ActiveDriver:   svc.s.Mailer.Name(),
+		Ready:          svc.s.Mailer.Current() != nil,
 	}
 	if fromDatabase {
 		view.Source = "database"

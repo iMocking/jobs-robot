@@ -111,6 +111,9 @@ func (svc *UserService) SetStatus(ctx context.Context, id string, status string,
 	if id == actor.UserID {
 		return UserView{}, apperr.ErrInvalidParams.WithMessage("不能修改自己的账号状态")
 	}
+	if _, err := svc.mutableUser(ctx, id); err != nil {
+		return UserView{}, err
+	}
 
 	updater := svc.s.Store.Ent.User.UpdateOneID(id).SetStatus(entuser.Status(status))
 	// 解锁时同时清零失败计数与锁定时间，否则会被立即重新锁定。
@@ -151,6 +154,9 @@ func (svc *UserService) SetRoles(ctx context.Context, id string, roles []string,
 			return UserView{}, apperr.ErrInvalidParams.WithMessage("不支持的角色：" + r)
 		}
 	}
+	if _, err := svc.mutableUser(ctx, id); err != nil {
+		return UserView{}, err
+	}
 
 	current, err := svc.s.Authz.RolesForUser(id)
 	if err != nil {
@@ -188,12 +194,9 @@ func (svc *UserService) ResetPassword(ctx context.Context, id string, newPasswor
 	if err := auth.ValidatePasswordStrength(newPassword, svc.s.Cfg.Auth.PasswordMinLength); err != nil {
 		return err
 	}
-	user, err := svc.s.Store.Ent.User.Get(ctx, id)
-	if ent.IsNotFound(err) {
-		return apperr.ErrUserNotFound
-	}
+	user, err := svc.mutableUser(ctx, id)
 	if err != nil {
-		return apperr.ErrInternal.WithCause(err)
+		return err
 	}
 
 	hash, err := auth.HashPassword(newPassword, svc.s.Cfg.Auth.BcryptCost)
@@ -223,6 +226,9 @@ func (svc *UserService) ResetPassword(ctx context.Context, id string, newPasswor
 func (svc *UserService) Delete(ctx context.Context, id string, actor Actor) error {
 	if id == actor.UserID {
 		return apperr.ErrInvalidParams.WithMessage("不能删除自己的账号")
+	}
+	if _, err := svc.mutableUser(ctx, id); err != nil {
+		return err
 	}
 
 	roles, err := svc.s.Authz.RolesForUser(id)
@@ -339,6 +345,25 @@ func (svc *UserService) assertNotLastAdmin(ctx context.Context, excludeUserID st
 		return apperr.ErrInvalidParams.WithMessage("系统必须保留至少一名可用管理员")
 	}
 	return nil
+}
+
+// mutableUser 读取用户并拒绝操作系统机器身份。
+//
+// 系统身份由 bootstrap 幂等维护，后台任何写操作都必须拒绝：
+// 禁用会让抓取/邮件失去审计归属，删除会让历史 actor_id 变成悬空引用，
+// 改角色会破坏「system 不继承任何角色」的边界，重置密码则毫无意义（本就无密码）。
+func (svc *UserService) mutableUser(ctx context.Context, id string) (*ent.User, error) {
+	user, err := svc.s.Store.Ent.User.Get(ctx, id)
+	if ent.IsNotFound(err) {
+		return nil, apperr.ErrUserNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrInternal.WithCause(err)
+	}
+	if user.Kind == entuser.KindSystem {
+		return nil, apperr.ErrInvalidParams.WithMessage("系统身份不可修改")
+	}
+	return user, nil
 }
 
 func containsString(list []string, target string) bool {

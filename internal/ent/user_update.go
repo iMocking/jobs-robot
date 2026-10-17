@@ -65,6 +65,34 @@ func (_u *UserUpdate) SetNillablePasswordHash(v *string) *UserUpdate {
 	return _u
 }
 
+// SetKind sets the "kind" field.
+func (_u *UserUpdate) SetKind(v user.Kind) *UserUpdate {
+	_u.mutation.SetKind(v)
+	return _u
+}
+
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableKind(v *user.Kind) *UserUpdate {
+	if v != nil {
+		_u.SetKind(*v)
+	}
+	return _u
+}
+
+// SetSystemKey sets the "system_key" field.
+func (_u *UserUpdate) SetSystemKey(v string) *UserUpdate {
+	_u.mutation.SetSystemKey(v)
+	return _u
+}
+
+// SetNillableSystemKey sets the "system_key" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableSystemKey(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetSystemKey(*v)
+	}
+	return _u
+}
+
 // SetNickname sets the "nickname" field.
 func (_u *UserUpdate) SetNickname(v string) *UserUpdate {
 	_u.mutation.SetNickname(v)
@@ -473,6 +501,16 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "password_hash", err: fmt.Errorf(`ent: validator failed for field "User.password_hash": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Kind(); ok {
+		if err := user.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "User.kind": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.SystemKey(); ok {
+		if err := user.SystemKeyValidator(v); err != nil {
+			return &ValidationError{Name: "system_key", err: fmt.Errorf(`ent: validator failed for field "User.system_key": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Nickname(); ok {
 		if err := user.NicknameValidator(v); err != nil {
 			return &ValidationError{Name: "nickname", err: fmt.Errorf(`ent: validator failed for field "User.nickname": %w`, err)}
@@ -536,6 +574,12 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Kind(); ok {
+		_spec.SetField(user.FieldKind, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.SystemKey(); ok {
+		_spec.SetField(user.FieldSystemKey, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Nickname(); ok {
 		_spec.SetField(user.FieldNickname, field.TypeString, value)
@@ -785,6 +829,34 @@ func (_u *UserUpdateOne) SetPasswordHash(v string) *UserUpdateOne {
 func (_u *UserUpdateOne) SetNillablePasswordHash(v *string) *UserUpdateOne {
 	if v != nil {
 		_u.SetPasswordHash(*v)
+	}
+	return _u
+}
+
+// SetKind sets the "kind" field.
+func (_u *UserUpdateOne) SetKind(v user.Kind) *UserUpdateOne {
+	_u.mutation.SetKind(v)
+	return _u
+}
+
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableKind(v *user.Kind) *UserUpdateOne {
+	if v != nil {
+		_u.SetKind(*v)
+	}
+	return _u
+}
+
+// SetSystemKey sets the "system_key" field.
+func (_u *UserUpdateOne) SetSystemKey(v string) *UserUpdateOne {
+	_u.mutation.SetSystemKey(v)
+	return _u
+}
+
+// SetNillableSystemKey sets the "system_key" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableSystemKey(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetSystemKey(*v)
 	}
 	return _u
 }
@@ -1210,6 +1282,16 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "password_hash", err: fmt.Errorf(`ent: validator failed for field "User.password_hash": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Kind(); ok {
+		if err := user.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "User.kind": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.SystemKey(); ok {
+		if err := user.SystemKeyValidator(v); err != nil {
+			return &ValidationError{Name: "system_key", err: fmt.Errorf(`ent: validator failed for field "User.system_key": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Nickname(); ok {
 		if err := user.NicknameValidator(v); err != nil {
 			return &ValidationError{Name: "nickname", err: fmt.Errorf(`ent: validator failed for field "User.nickname": %w`, err)}
@@ -1290,6 +1372,12 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Kind(); ok {
+		_spec.SetField(user.FieldKind, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.SystemKey(); ok {
+		_spec.SetField(user.FieldSystemKey, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Nickname(); ok {
 		_spec.SetField(user.FieldNickname, field.TypeString, value)

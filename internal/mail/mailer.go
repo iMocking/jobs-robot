@@ -17,6 +17,11 @@ type Message struct {
 	Subject string
 	Text    string
 	HTML    string
+	// FromName 是可选的发件人显示名覆盖（例如「Jobs Mail Robot」）。
+	//
+	// 为空时回落到投递器自身的 from_name（config.mail.from_name），
+	// 这样直接构造 mailer 的调用方与测试不需要感知系统身份。
+	FromName string
 }
 
 // Mailer 是邮件投递接口。
@@ -56,6 +61,19 @@ func (m *consoleMailer) Send(_ context.Context, msg Message) error {
 		"text", msg.Text,
 	)
 	return nil
+}
+
+// SetFromName 为 Mailer 设置发件人显示名（可选能力）。
+//
+// 支持的实现：*Dynamic（跨配置热替换保持）与 *smtpMailer。
+// 其他实现（例如测试替身）静默忽略，避免为了一个展示字段扩大 Mailer 接口。
+func SetFromName(m Mailer, name string) {
+	switch v := m.(type) {
+	case *Dynamic:
+		v.SetFromName(name)
+	case *smtpMailer:
+		v.fromName = name
+	}
 }
 
 // VerificationCodeMessage 构造验证码邮件。

@@ -10,7 +10,6 @@ import AppIcon from '@/components/AppIcon.vue'
 import AppInput from '@/components/AppInput.vue'
 import AppPagination from '@/components/AppPagination.vue'
 import AppSelect from '@/components/AppSelect.vue'
-import PageHeader from '@/components/PageHeader.vue'
 import { useAdminRefresh } from '@/composables/useAdminRefresh'
 import { useAsync } from '@/composables/useAsync'
 import { auditDetailText, formatDateTime } from '@/utils/format'
@@ -145,11 +144,6 @@ onBeforeUnmount(() => clearTimeout(keywordTimer))
 
 <template>
   <div>
-    <PageHeader
-      title="审计日志"
-      description="所有会改变系统状态的操作都会留痕；审计写入失败不会导致业务失败，因此它记录的是线索而非账本。"
-    />
-
     <div class="card mb-5 p-5">
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <AppInput
@@ -202,8 +196,9 @@ onBeforeUnmount(() => clearTimeout(keywordTimer))
         </td>
 
         <td class="td-cell whitespace-nowrap">
-          <!-- 操作者只有 actor_email（可空）：系统任务没有 actor_id，邮箱也为空 -->
-          <AppBadge v-if="!row.actor_email" tone="ink">系统 / 未知来源</AppBadge>
+          <!-- 系统机器身份：后端回填 actor_name（如 Jobs AI Robot），优先展示昵称 -->
+          <AppBadge v-if="row.actor_name" tone="teal" size="sm">{{ row.actor_name }}</AppBadge>
+          <AppBadge v-else-if="!row.actor_email" tone="ink">系统 / 未知来源</AppBadge>
           <span v-else class="text-[12.5px] text-ink-700">{{ row.actor_email }}</span>
         </td>
 

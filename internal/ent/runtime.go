@@ -190,114 +190,118 @@ func init() {
 	company.DefaultDiscoveryURL = companyDescDiscoveryURL.Default.(string)
 	// company.DiscoveryURLValidator is a validator for the "discovery_url" field. It is called by the builders before save.
 	company.DiscoveryURLValidator = companyDescDiscoveryURL.Validators[0].(func(string) error)
+	// companyDescDiscoveredBy is the schema descriptor for discovered_by field.
+	companyDescDiscoveredBy := companyFields[5].Descriptor()
+	// company.DiscoveredByValidator is a validator for the "discovered_by" field. It is called by the builders before save.
+	company.DiscoveredByValidator = companyDescDiscoveredBy.Validators[0].(func(string) error)
 	// companyDescLogoURL is the schema descriptor for logo_url field.
-	companyDescLogoURL := companyFields[5].Descriptor()
+	companyDescLogoURL := companyFields[6].Descriptor()
 	// company.DefaultLogoURL holds the default value on creation for the logo_url field.
 	company.DefaultLogoURL = companyDescLogoURL.Default.(string)
 	// company.LogoURLValidator is a validator for the "logo_url" field. It is called by the builders before save.
 	company.LogoURLValidator = companyDescLogoURL.Validators[0].(func(string) error)
 	// companyDescIndustry is the schema descriptor for industry field.
-	companyDescIndustry := companyFields[6].Descriptor()
+	companyDescIndustry := companyFields[7].Descriptor()
 	// company.DefaultIndustry holds the default value on creation for the industry field.
 	company.DefaultIndustry = companyDescIndustry.Default.(string)
 	// company.IndustryValidator is a validator for the "industry" field. It is called by the builders before save.
 	company.IndustryValidator = companyDescIndustry.Validators[0].(func(string) error)
 	// companyDescSubIndustry is the schema descriptor for sub_industry field.
-	companyDescSubIndustry := companyFields[7].Descriptor()
+	companyDescSubIndustry := companyFields[8].Descriptor()
 	// company.DefaultSubIndustry holds the default value on creation for the sub_industry field.
 	company.DefaultSubIndustry = companyDescSubIndustry.Default.(string)
 	// company.SubIndustryValidator is a validator for the "sub_industry" field. It is called by the builders before save.
 	company.SubIndustryValidator = companyDescSubIndustry.Validators[0].(func(string) error)
 	// companyDescScale is the schema descriptor for scale field.
-	companyDescScale := companyFields[8].Descriptor()
+	companyDescScale := companyFields[9].Descriptor()
 	// company.DefaultScale holds the default value on creation for the scale field.
 	company.DefaultScale = companyDescScale.Default.(string)
 	// company.ScaleValidator is a validator for the "scale" field. It is called by the builders before save.
 	company.ScaleValidator = companyDescScale.Validators[0].(func(string) error)
 	// companyDescNature is the schema descriptor for nature field.
-	companyDescNature := companyFields[9].Descriptor()
+	companyDescNature := companyFields[10].Descriptor()
 	// company.DefaultNature holds the default value on creation for the nature field.
 	company.DefaultNature = companyDescNature.Default.(string)
 	// company.NatureValidator is a validator for the "nature" field. It is called by the builders before save.
 	company.NatureValidator = companyDescNature.Validators[0].(func(string) error)
 	// companyDescLocation is the schema descriptor for location field.
-	companyDescLocation := companyFields[10].Descriptor()
+	companyDescLocation := companyFields[11].Descriptor()
 	// company.DefaultLocation holds the default value on creation for the location field.
 	company.DefaultLocation = companyDescLocation.Default.(string)
 	// company.LocationValidator is a validator for the "location" field. It is called by the builders before save.
 	company.LocationValidator = companyDescLocation.Validators[0].(func(string) error)
 	// companyDescDescription is the schema descriptor for description field.
-	companyDescDescription := companyFields[11].Descriptor()
+	companyDescDescription := companyFields[12].Descriptor()
 	// company.DefaultDescription holds the default value on creation for the description field.
 	company.DefaultDescription = companyDescDescription.Default.(string)
 	// companyDescContactEmail is the schema descriptor for contact_email field.
-	companyDescContactEmail := companyFields[12].Descriptor()
+	companyDescContactEmail := companyFields[13].Descriptor()
 	// company.DefaultContactEmail holds the default value on creation for the contact_email field.
 	company.DefaultContactEmail = companyDescContactEmail.Default.(string)
 	// company.ContactEmailValidator is a validator for the "contact_email" field. It is called by the builders before save.
 	company.ContactEmailValidator = companyDescContactEmail.Validators[0].(func(string) error)
 	// companyDescContactPhone is the schema descriptor for contact_phone field.
-	companyDescContactPhone := companyFields[13].Descriptor()
+	companyDescContactPhone := companyFields[14].Descriptor()
 	// company.DefaultContactPhone holds the default value on creation for the contact_phone field.
 	company.DefaultContactPhone = companyDescContactPhone.Default.(string)
 	// company.ContactPhoneValidator is a validator for the "contact_phone" field. It is called by the builders before save.
 	company.ContactPhoneValidator = companyDescContactPhone.Validators[0].(func(string) error)
 	// companyDescEnabled is the schema descriptor for enabled field.
-	companyDescEnabled := companyFields[14].Descriptor()
+	companyDescEnabled := companyFields[15].Descriptor()
 	// company.DefaultEnabled holds the default value on creation for the enabled field.
 	company.DefaultEnabled = companyDescEnabled.Default.(bool)
 	// companyDescVerified is the schema descriptor for verified field.
-	companyDescVerified := companyFields[15].Descriptor()
+	companyDescVerified := companyFields[16].Descriptor()
 	// company.DefaultVerified holds the default value on creation for the verified field.
 	company.DefaultVerified = companyDescVerified.Default.(bool)
 	// companyDescPriority is the schema descriptor for priority field.
-	companyDescPriority := companyFields[16].Descriptor()
+	companyDescPriority := companyFields[17].Descriptor()
 	// company.DefaultPriority holds the default value on creation for the priority field.
 	company.DefaultPriority = companyDescPriority.Default.(int)
 	// companyDescCrawlEnabled is the schema descriptor for crawl_enabled field.
-	companyDescCrawlEnabled := companyFields[17].Descriptor()
+	companyDescCrawlEnabled := companyFields[18].Descriptor()
 	// company.DefaultCrawlEnabled holds the default value on creation for the crawl_enabled field.
 	company.DefaultCrawlEnabled = companyDescCrawlEnabled.Default.(bool)
 	// companyDescCrawlIntervalSeconds is the schema descriptor for crawl_interval_seconds field.
-	companyDescCrawlIntervalSeconds := companyFields[18].Descriptor()
+	companyDescCrawlIntervalSeconds := companyFields[19].Descriptor()
 	// company.DefaultCrawlIntervalSeconds holds the default value on creation for the crawl_interval_seconds field.
 	company.DefaultCrawlIntervalSeconds = companyDescCrawlIntervalSeconds.Default.(int)
 	// companyDescForceHeadless is the schema descriptor for force_headless field.
-	companyDescForceHeadless := companyFields[20].Descriptor()
+	companyDescForceHeadless := companyFields[21].Descriptor()
 	// company.DefaultForceHeadless holds the default value on creation for the force_headless field.
 	company.DefaultForceHeadless = companyDescForceHeadless.Default.(bool)
 	// companyDescRespectRobots is the schema descriptor for respect_robots field.
-	companyDescRespectRobots := companyFields[21].Descriptor()
+	companyDescRespectRobots := companyFields[22].Descriptor()
 	// company.DefaultRespectRobots holds the default value on creation for the respect_robots field.
 	company.DefaultRespectRobots = companyDescRespectRobots.Default.(bool)
 	// companyDescLastCrawlStatus is the schema descriptor for last_crawl_status field.
-	companyDescLastCrawlStatus := companyFields[23].Descriptor()
+	companyDescLastCrawlStatus := companyFields[24].Descriptor()
 	// company.DefaultLastCrawlStatus holds the default value on creation for the last_crawl_status field.
 	company.DefaultLastCrawlStatus = companyDescLastCrawlStatus.Default.(string)
 	// company.LastCrawlStatusValidator is a validator for the "last_crawl_status" field. It is called by the builders before save.
 	company.LastCrawlStatusValidator = companyDescLastCrawlStatus.Validators[0].(func(string) error)
 	// companyDescLastCrawlError is the schema descriptor for last_crawl_error field.
-	companyDescLastCrawlError := companyFields[24].Descriptor()
+	companyDescLastCrawlError := companyFields[25].Descriptor()
 	// company.DefaultLastCrawlError holds the default value on creation for the last_crawl_error field.
 	company.DefaultLastCrawlError = companyDescLastCrawlError.Default.(string)
 	// company.LastCrawlErrorValidator is a validator for the "last_crawl_error" field. It is called by the builders before save.
 	company.LastCrawlErrorValidator = companyDescLastCrawlError.Validators[0].(func(string) error)
 	// companyDescJobCount is the schema descriptor for job_count field.
-	companyDescJobCount := companyFields[25].Descriptor()
+	companyDescJobCount := companyFields[26].Descriptor()
 	// company.DefaultJobCount holds the default value on creation for the job_count field.
 	company.DefaultJobCount = companyDescJobCount.Default.(int)
 	// companyDescRobotsAllowed is the schema descriptor for robots_allowed field.
-	companyDescRobotsAllowed := companyFields[27].Descriptor()
+	companyDescRobotsAllowed := companyFields[28].Descriptor()
 	// company.DefaultRobotsAllowed holds the default value on creation for the robots_allowed field.
 	company.DefaultRobotsAllowed = companyDescRobotsAllowed.Default.(bool)
 	// companyDescSource is the schema descriptor for source field.
-	companyDescSource := companyFields[28].Descriptor()
+	companyDescSource := companyFields[29].Descriptor()
 	// company.DefaultSource holds the default value on creation for the source field.
 	company.DefaultSource = companyDescSource.Default.(string)
 	// company.SourceValidator is a validator for the "source" field. It is called by the builders before save.
 	company.SourceValidator = companyDescSource.Validators[0].(func(string) error)
 	// companyDescRemark is the schema descriptor for remark field.
-	companyDescRemark := companyFields[29].Descriptor()
+	companyDescRemark := companyFields[30].Descriptor()
 	// company.DefaultRemark holds the default value on creation for the remark field.
 	company.DefaultRemark = companyDescRemark.Default.(string)
 	// company.RemarkValidator is a validator for the "remark" field. It is called by the builders before save.
@@ -430,60 +434,64 @@ func init() {
 			return nil
 		}
 	}()
+	// crawlrunDescTriggeredBy is the schema descriptor for triggered_by field.
+	crawlrunDescTriggeredBy := crawlrunFields[2].Descriptor()
+	// crawlrun.TriggeredByValidator is a validator for the "triggered_by" field. It is called by the builders before save.
+	crawlrun.TriggeredByValidator = crawlrunDescTriggeredBy.Validators[0].(func(string) error)
 	// crawlrunDescSkipReason is the schema descriptor for skip_reason field.
-	crawlrunDescSkipReason := crawlrunFields[3].Descriptor()
+	crawlrunDescSkipReason := crawlrunFields[4].Descriptor()
 	// crawlrun.DefaultSkipReason holds the default value on creation for the skip_reason field.
 	crawlrun.DefaultSkipReason = crawlrunDescSkipReason.Default.(string)
 	// crawlrun.SkipReasonValidator is a validator for the "skip_reason" field. It is called by the builders before save.
 	crawlrun.SkipReasonValidator = crawlrunDescSkipReason.Validators[0].(func(string) error)
 	// crawlrunDescStartedAt is the schema descriptor for started_at field.
-	crawlrunDescStartedAt := crawlrunFields[4].Descriptor()
+	crawlrunDescStartedAt := crawlrunFields[5].Descriptor()
 	// crawlrun.DefaultStartedAt holds the default value on creation for the started_at field.
 	crawlrun.DefaultStartedAt = crawlrunDescStartedAt.Default.(func() time.Time)
 	// crawlrunDescDurationMs is the schema descriptor for duration_ms field.
-	crawlrunDescDurationMs := crawlrunFields[6].Descriptor()
+	crawlrunDescDurationMs := crawlrunFields[7].Descriptor()
 	// crawlrun.DefaultDurationMs holds the default value on creation for the duration_ms field.
 	crawlrun.DefaultDurationMs = crawlrunDescDurationMs.Default.(int64)
 	// crawlrunDescPagesFetched is the schema descriptor for pages_fetched field.
-	crawlrunDescPagesFetched := crawlrunFields[7].Descriptor()
+	crawlrunDescPagesFetched := crawlrunFields[8].Descriptor()
 	// crawlrun.DefaultPagesFetched holds the default value on creation for the pages_fetched field.
 	crawlrun.DefaultPagesFetched = crawlrunDescPagesFetched.Default.(int)
 	// crawlrunDescJobsFound is the schema descriptor for jobs_found field.
-	crawlrunDescJobsFound := crawlrunFields[8].Descriptor()
+	crawlrunDescJobsFound := crawlrunFields[9].Descriptor()
 	// crawlrun.DefaultJobsFound holds the default value on creation for the jobs_found field.
 	crawlrun.DefaultJobsFound = crawlrunDescJobsFound.Default.(int)
 	// crawlrunDescJobsCreated is the schema descriptor for jobs_created field.
-	crawlrunDescJobsCreated := crawlrunFields[9].Descriptor()
+	crawlrunDescJobsCreated := crawlrunFields[10].Descriptor()
 	// crawlrun.DefaultJobsCreated holds the default value on creation for the jobs_created field.
 	crawlrun.DefaultJobsCreated = crawlrunDescJobsCreated.Default.(int)
 	// crawlrunDescJobsUpdated is the schema descriptor for jobs_updated field.
-	crawlrunDescJobsUpdated := crawlrunFields[10].Descriptor()
+	crawlrunDescJobsUpdated := crawlrunFields[11].Descriptor()
 	// crawlrun.DefaultJobsUpdated holds the default value on creation for the jobs_updated field.
 	crawlrun.DefaultJobsUpdated = crawlrunDescJobsUpdated.Default.(int)
 	// crawlrunDescJobsUnchanged is the schema descriptor for jobs_unchanged field.
-	crawlrunDescJobsUnchanged := crawlrunFields[11].Descriptor()
+	crawlrunDescJobsUnchanged := crawlrunFields[12].Descriptor()
 	// crawlrun.DefaultJobsUnchanged holds the default value on creation for the jobs_unchanged field.
 	crawlrun.DefaultJobsUnchanged = crawlrunDescJobsUnchanged.Default.(int)
 	// crawlrunDescJobsFiltered is the schema descriptor for jobs_filtered field.
-	crawlrunDescJobsFiltered := crawlrunFields[12].Descriptor()
+	crawlrunDescJobsFiltered := crawlrunFields[13].Descriptor()
 	// crawlrun.DefaultJobsFiltered holds the default value on creation for the jobs_filtered field.
 	crawlrun.DefaultJobsFiltered = crawlrunDescJobsFiltered.Default.(int)
 	// crawlrunDescJobsExpired is the schema descriptor for jobs_expired field.
-	crawlrunDescJobsExpired := crawlrunFields[13].Descriptor()
+	crawlrunDescJobsExpired := crawlrunFields[14].Descriptor()
 	// crawlrun.DefaultJobsExpired holds the default value on creation for the jobs_expired field.
 	crawlrun.DefaultJobsExpired = crawlrunDescJobsExpired.Default.(int)
 	// crawlrunDescCareersURL is the schema descriptor for careers_url field.
-	crawlrunDescCareersURL := crawlrunFields[14].Descriptor()
+	crawlrunDescCareersURL := crawlrunFields[15].Descriptor()
 	// crawlrun.DefaultCareersURL holds the default value on creation for the careers_url field.
 	crawlrun.DefaultCareersURL = crawlrunDescCareersURL.Default.(string)
 	// crawlrun.CareersURLValidator is a validator for the "careers_url" field. It is called by the builders before save.
 	crawlrun.CareersURLValidator = crawlrunDescCareersURL.Validators[0].(func(string) error)
 	// crawlrunDescUsedHeadless is the schema descriptor for used_headless field.
-	crawlrunDescUsedHeadless := crawlrunFields[15].Descriptor()
+	crawlrunDescUsedHeadless := crawlrunFields[16].Descriptor()
 	// crawlrun.DefaultUsedHeadless holds the default value on creation for the used_headless field.
 	crawlrun.DefaultUsedHeadless = crawlrunDescUsedHeadless.Default.(bool)
 	// crawlrunDescErrorMessage is the schema descriptor for error_message field.
-	crawlrunDescErrorMessage := crawlrunFields[16].Descriptor()
+	crawlrunDescErrorMessage := crawlrunFields[17].Descriptor()
 	// crawlrun.DefaultErrorMessage holds the default value on creation for the error_message field.
 	crawlrun.DefaultErrorMessage = crawlrunDescErrorMessage.Default.(string)
 	// crawlrun.ErrorMessageValidator is a validator for the "error_message" field. It is called by the builders before save.
@@ -589,8 +597,12 @@ func init() {
 			return nil
 		}
 	}()
+	// jobpostingDescCreatedBy is the schema descriptor for created_by field.
+	jobpostingDescCreatedBy := jobpostingFields[7].Descriptor()
+	// jobposting.CreatedByValidator is a validator for the "created_by" field. It is called by the builders before save.
+	jobposting.CreatedByValidator = jobpostingDescCreatedBy.Validators[0].(func(string) error)
 	// jobpostingDescTitle is the schema descriptor for title field.
-	jobpostingDescTitle := jobpostingFields[7].Descriptor()
+	jobpostingDescTitle := jobpostingFields[8].Descriptor()
 	// jobposting.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	jobposting.TitleValidator = func() func(string) error {
 		validators := jobpostingDescTitle.Validators
@@ -608,201 +620,201 @@ func init() {
 		}
 	}()
 	// jobpostingDescJobCode is the schema descriptor for job_code field.
-	jobpostingDescJobCode := jobpostingFields[8].Descriptor()
+	jobpostingDescJobCode := jobpostingFields[9].Descriptor()
 	// jobposting.DefaultJobCode holds the default value on creation for the job_code field.
 	jobposting.DefaultJobCode = jobpostingDescJobCode.Default.(string)
 	// jobposting.JobCodeValidator is a validator for the "job_code" field. It is called by the builders before save.
 	jobposting.JobCodeValidator = jobpostingDescJobCode.Validators[0].(func(string) error)
 	// jobpostingDescCategory is the schema descriptor for category field.
-	jobpostingDescCategory := jobpostingFields[9].Descriptor()
+	jobpostingDescCategory := jobpostingFields[10].Descriptor()
 	// jobposting.DefaultCategory holds the default value on creation for the category field.
 	jobposting.DefaultCategory = jobpostingDescCategory.Default.(string)
 	// jobposting.CategoryValidator is a validator for the "category" field. It is called by the builders before save.
 	jobposting.CategoryValidator = jobpostingDescCategory.Validators[0].(func(string) error)
 	// jobpostingDescIndustry is the schema descriptor for industry field.
-	jobpostingDescIndustry := jobpostingFields[10].Descriptor()
+	jobpostingDescIndustry := jobpostingFields[11].Descriptor()
 	// jobposting.DefaultIndustry holds the default value on creation for the industry field.
 	jobposting.DefaultIndustry = jobpostingDescIndustry.Default.(string)
 	// jobposting.IndustryValidator is a validator for the "industry" field. It is called by the builders before save.
 	jobposting.IndustryValidator = jobpostingDescIndustry.Validators[0].(func(string) error)
 	// jobpostingDescEmploymentType is the schema descriptor for employment_type field.
-	jobpostingDescEmploymentType := jobpostingFields[11].Descriptor()
+	jobpostingDescEmploymentType := jobpostingFields[12].Descriptor()
 	// jobposting.DefaultEmploymentType holds the default value on creation for the employment_type field.
 	jobposting.DefaultEmploymentType = jobpostingDescEmploymentType.Default.(string)
 	// jobposting.EmploymentTypeValidator is a validator for the "employment_type" field. It is called by the builders before save.
 	jobposting.EmploymentTypeValidator = jobpostingDescEmploymentType.Validators[0].(func(string) error)
 	// jobpostingDescDepartment is the schema descriptor for department field.
-	jobpostingDescDepartment := jobpostingFields[12].Descriptor()
+	jobpostingDescDepartment := jobpostingFields[13].Descriptor()
 	// jobposting.DefaultDepartment holds the default value on creation for the department field.
 	jobposting.DefaultDepartment = jobpostingDescDepartment.Default.(string)
 	// jobposting.DepartmentValidator is a validator for the "department" field. It is called by the builders before save.
 	jobposting.DepartmentValidator = jobpostingDescDepartment.Validators[0].(func(string) error)
 	// jobpostingDescExperience is the schema descriptor for experience field.
-	jobpostingDescExperience := jobpostingFields[14].Descriptor()
+	jobpostingDescExperience := jobpostingFields[15].Descriptor()
 	// jobposting.DefaultExperience holds the default value on creation for the experience field.
 	jobposting.DefaultExperience = jobpostingDescExperience.Default.(string)
 	// jobposting.ExperienceValidator is a validator for the "experience" field. It is called by the builders before save.
 	jobposting.ExperienceValidator = jobpostingDescExperience.Validators[0].(func(string) error)
 	// jobpostingDescEducation is the schema descriptor for education field.
-	jobpostingDescEducation := jobpostingFields[15].Descriptor()
+	jobpostingDescEducation := jobpostingFields[16].Descriptor()
 	// jobposting.DefaultEducation holds the default value on creation for the education field.
 	jobposting.DefaultEducation = jobpostingDescEducation.Default.(string)
 	// jobposting.EducationValidator is a validator for the "education" field. It is called by the builders before save.
 	jobposting.EducationValidator = jobpostingDescEducation.Validators[0].(func(string) error)
 	// jobpostingDescWorkMode is the schema descriptor for work_mode field.
-	jobpostingDescWorkMode := jobpostingFields[16].Descriptor()
+	jobpostingDescWorkMode := jobpostingFields[17].Descriptor()
 	// jobposting.DefaultWorkMode holds the default value on creation for the work_mode field.
 	jobposting.DefaultWorkMode = jobpostingDescWorkMode.Default.(string)
 	// jobposting.WorkModeValidator is a validator for the "work_mode" field. It is called by the builders before save.
 	jobposting.WorkModeValidator = jobpostingDescWorkMode.Validators[0].(func(string) error)
 	// jobpostingDescSalaryText is the schema descriptor for salary_text field.
-	jobpostingDescSalaryText := jobpostingFields[17].Descriptor()
+	jobpostingDescSalaryText := jobpostingFields[18].Descriptor()
 	// jobposting.DefaultSalaryText holds the default value on creation for the salary_text field.
 	jobposting.DefaultSalaryText = jobpostingDescSalaryText.Default.(string)
 	// jobposting.SalaryTextValidator is a validator for the "salary_text" field. It is called by the builders before save.
 	jobposting.SalaryTextValidator = jobpostingDescSalaryText.Validators[0].(func(string) error)
 	// jobpostingDescCountry is the schema descriptor for country field.
-	jobpostingDescCountry := jobpostingFields[21].Descriptor()
+	jobpostingDescCountry := jobpostingFields[22].Descriptor()
 	// jobposting.DefaultCountry holds the default value on creation for the country field.
 	jobposting.DefaultCountry = jobpostingDescCountry.Default.(string)
 	// jobposting.CountryValidator is a validator for the "country" field. It is called by the builders before save.
 	jobposting.CountryValidator = jobpostingDescCountry.Validators[0].(func(string) error)
 	// jobpostingDescProvince is the schema descriptor for province field.
-	jobpostingDescProvince := jobpostingFields[22].Descriptor()
+	jobpostingDescProvince := jobpostingFields[23].Descriptor()
 	// jobposting.DefaultProvince holds the default value on creation for the province field.
 	jobposting.DefaultProvince = jobpostingDescProvince.Default.(string)
 	// jobposting.ProvinceValidator is a validator for the "province" field. It is called by the builders before save.
 	jobposting.ProvinceValidator = jobpostingDescProvince.Validators[0].(func(string) error)
 	// jobpostingDescCity is the schema descriptor for city field.
-	jobpostingDescCity := jobpostingFields[23].Descriptor()
+	jobpostingDescCity := jobpostingFields[24].Descriptor()
 	// jobposting.DefaultCity holds the default value on creation for the city field.
 	jobposting.DefaultCity = jobpostingDescCity.Default.(string)
 	// jobposting.CityValidator is a validator for the "city" field. It is called by the builders before save.
 	jobposting.CityValidator = jobpostingDescCity.Validators[0].(func(string) error)
 	// jobpostingDescDistrict is the schema descriptor for district field.
-	jobpostingDescDistrict := jobpostingFields[24].Descriptor()
+	jobpostingDescDistrict := jobpostingFields[25].Descriptor()
 	// jobposting.DefaultDistrict holds the default value on creation for the district field.
 	jobposting.DefaultDistrict = jobpostingDescDistrict.Default.(string)
 	// jobposting.DistrictValidator is a validator for the "district" field. It is called by the builders before save.
 	jobposting.DistrictValidator = jobpostingDescDistrict.Validators[0].(func(string) error)
 	// jobpostingDescAddress is the schema descriptor for address field.
-	jobpostingDescAddress := jobpostingFields[25].Descriptor()
+	jobpostingDescAddress := jobpostingFields[26].Descriptor()
 	// jobposting.DefaultAddress holds the default value on creation for the address field.
 	jobposting.DefaultAddress = jobpostingDescAddress.Default.(string)
 	// jobposting.AddressValidator is a validator for the "address" field. It is called by the builders before save.
 	jobposting.AddressValidator = jobpostingDescAddress.Validators[0].(func(string) error)
 	// jobpostingDescLocationText is the schema descriptor for location_text field.
-	jobpostingDescLocationText := jobpostingFields[26].Descriptor()
+	jobpostingDescLocationText := jobpostingFields[27].Descriptor()
 	// jobposting.DefaultLocationText holds the default value on creation for the location_text field.
 	jobposting.DefaultLocationText = jobpostingDescLocationText.Default.(string)
 	// jobposting.LocationTextValidator is a validator for the "location_text" field. It is called by the builders before save.
 	jobposting.LocationTextValidator = jobpostingDescLocationText.Validators[0].(func(string) error)
 	// jobpostingDescSummary is the schema descriptor for summary field.
-	jobpostingDescSummary := jobpostingFields[27].Descriptor()
+	jobpostingDescSummary := jobpostingFields[28].Descriptor()
 	// jobposting.DefaultSummary holds the default value on creation for the summary field.
 	jobposting.DefaultSummary = jobpostingDescSummary.Default.(string)
 	// jobposting.SummaryValidator is a validator for the "summary" field. It is called by the builders before save.
 	jobposting.SummaryValidator = jobpostingDescSummary.Validators[0].(func(string) error)
 	// jobpostingDescDescription is the schema descriptor for description field.
-	jobpostingDescDescription := jobpostingFields[28].Descriptor()
+	jobpostingDescDescription := jobpostingFields[29].Descriptor()
 	// jobposting.DefaultDescription holds the default value on creation for the description field.
 	jobposting.DefaultDescription = jobpostingDescDescription.Default.(string)
 	// jobpostingDescResponsibilities is the schema descriptor for responsibilities field.
-	jobpostingDescResponsibilities := jobpostingFields[29].Descriptor()
+	jobpostingDescResponsibilities := jobpostingFields[30].Descriptor()
 	// jobposting.DefaultResponsibilities holds the default value on creation for the responsibilities field.
 	jobposting.DefaultResponsibilities = jobpostingDescResponsibilities.Default.(string)
 	// jobpostingDescRequirements is the schema descriptor for requirements field.
-	jobpostingDescRequirements := jobpostingFields[30].Descriptor()
+	jobpostingDescRequirements := jobpostingFields[31].Descriptor()
 	// jobposting.DefaultRequirements holds the default value on creation for the requirements field.
 	jobposting.DefaultRequirements = jobpostingDescRequirements.Default.(string)
 	// jobpostingDescBenefits is the schema descriptor for benefits field.
-	jobpostingDescBenefits := jobpostingFields[32].Descriptor()
+	jobpostingDescBenefits := jobpostingFields[33].Descriptor()
 	// jobposting.DefaultBenefits holds the default value on creation for the benefits field.
 	jobposting.DefaultBenefits = jobpostingDescBenefits.Default.(string)
 	// jobpostingDescContactPerson is the schema descriptor for contact_person field.
-	jobpostingDescContactPerson := jobpostingFields[34].Descriptor()
+	jobpostingDescContactPerson := jobpostingFields[35].Descriptor()
 	// jobposting.DefaultContactPerson holds the default value on creation for the contact_person field.
 	jobposting.DefaultContactPerson = jobpostingDescContactPerson.Default.(string)
 	// jobposting.ContactPersonValidator is a validator for the "contact_person" field. It is called by the builders before save.
 	jobposting.ContactPersonValidator = jobpostingDescContactPerson.Validators[0].(func(string) error)
 	// jobpostingDescContactEmail is the schema descriptor for contact_email field.
-	jobpostingDescContactEmail := jobpostingFields[35].Descriptor()
+	jobpostingDescContactEmail := jobpostingFields[36].Descriptor()
 	// jobposting.DefaultContactEmail holds the default value on creation for the contact_email field.
 	jobposting.DefaultContactEmail = jobpostingDescContactEmail.Default.(string)
 	// jobposting.ContactEmailValidator is a validator for the "contact_email" field. It is called by the builders before save.
 	jobposting.ContactEmailValidator = jobpostingDescContactEmail.Validators[0].(func(string) error)
 	// jobpostingDescContactPhone is the schema descriptor for contact_phone field.
-	jobpostingDescContactPhone := jobpostingFields[36].Descriptor()
+	jobpostingDescContactPhone := jobpostingFields[37].Descriptor()
 	// jobposting.DefaultContactPhone holds the default value on creation for the contact_phone field.
 	jobposting.DefaultContactPhone = jobpostingDescContactPhone.Default.(string)
 	// jobposting.ContactPhoneValidator is a validator for the "contact_phone" field. It is called by the builders before save.
 	jobposting.ContactPhoneValidator = jobpostingDescContactPhone.Validators[0].(func(string) error)
 	// jobpostingDescContactWechat is the schema descriptor for contact_wechat field.
-	jobpostingDescContactWechat := jobpostingFields[37].Descriptor()
+	jobpostingDescContactWechat := jobpostingFields[38].Descriptor()
 	// jobposting.DefaultContactWechat holds the default value on creation for the contact_wechat field.
 	jobposting.DefaultContactWechat = jobpostingDescContactWechat.Default.(string)
 	// jobposting.ContactWechatValidator is a validator for the "contact_wechat" field. It is called by the builders before save.
 	jobposting.ContactWechatValidator = jobpostingDescContactWechat.Validators[0].(func(string) error)
 	// jobpostingDescApplyMethod is the schema descriptor for apply_method field.
-	jobpostingDescApplyMethod := jobpostingFields[38].Descriptor()
+	jobpostingDescApplyMethod := jobpostingFields[39].Descriptor()
 	// jobposting.DefaultApplyMethod holds the default value on creation for the apply_method field.
 	jobposting.DefaultApplyMethod = jobpostingDescApplyMethod.Default.(string)
 	// jobposting.ApplyMethodValidator is a validator for the "apply_method" field. It is called by the builders before save.
 	jobposting.ApplyMethodValidator = jobpostingDescApplyMethod.Validators[0].(func(string) error)
 	// jobpostingDescLastUpdatedAt is the schema descriptor for last_updated_at field.
-	jobpostingDescLastUpdatedAt := jobpostingFields[42].Descriptor()
+	jobpostingDescLastUpdatedAt := jobpostingFields[43].Descriptor()
 	// jobposting.DefaultLastUpdatedAt holds the default value on creation for the last_updated_at field.
 	jobposting.DefaultLastUpdatedAt = jobpostingDescLastUpdatedAt.Default.(func() time.Time)
 	// jobposting.UpdateDefaultLastUpdatedAt holds the default value on update for the last_updated_at field.
 	jobposting.UpdateDefaultLastUpdatedAt = jobpostingDescLastUpdatedAt.UpdateDefault.(func() time.Time)
 	// jobpostingDescLastSeenAt is the schema descriptor for last_seen_at field.
-	jobpostingDescLastSeenAt := jobpostingFields[43].Descriptor()
+	jobpostingDescLastSeenAt := jobpostingFields[44].Descriptor()
 	// jobposting.DefaultLastSeenAt holds the default value on creation for the last_seen_at field.
 	jobposting.DefaultLastSeenAt = jobpostingDescLastSeenAt.Default.(func() time.Time)
 	// jobpostingDescCrawledAt is the schema descriptor for crawled_at field.
-	jobpostingDescCrawledAt := jobpostingFields[44].Descriptor()
+	jobpostingDescCrawledAt := jobpostingFields[45].Descriptor()
 	// jobposting.DefaultCrawledAt holds the default value on creation for the crawled_at field.
 	jobposting.DefaultCrawledAt = jobpostingDescCrawledAt.Default.(func() time.Time)
 	// jobpostingDescContentHash is the schema descriptor for content_hash field.
-	jobpostingDescContentHash := jobpostingFields[45].Descriptor()
+	jobpostingDescContentHash := jobpostingFields[46].Descriptor()
 	// jobposting.DefaultContentHash holds the default value on creation for the content_hash field.
 	jobposting.DefaultContentHash = jobpostingDescContentHash.Default.(string)
 	// jobposting.ContentHashValidator is a validator for the "content_hash" field. It is called by the builders before save.
 	jobposting.ContentHashValidator = jobpostingDescContentHash.Validators[0].(func(string) error)
 	// jobpostingDescRevision is the schema descriptor for revision field.
-	jobpostingDescRevision := jobpostingFields[46].Descriptor()
+	jobpostingDescRevision := jobpostingFields[47].Descriptor()
 	// jobposting.DefaultRevision holds the default value on creation for the revision field.
 	jobposting.DefaultRevision = jobpostingDescRevision.Default.(int)
 	// jobpostingDescQualityScore is the schema descriptor for quality_score field.
-	jobpostingDescQualityScore := jobpostingFields[47].Descriptor()
+	jobpostingDescQualityScore := jobpostingFields[48].Descriptor()
 	// jobposting.DefaultQualityScore holds the default value on creation for the quality_score field.
 	jobposting.DefaultQualityScore = jobpostingDescQualityScore.Default.(int)
 	// jobpostingDescParseConfidence is the schema descriptor for parse_confidence field.
-	jobpostingDescParseConfidence := jobpostingFields[48].Descriptor()
+	jobpostingDescParseConfidence := jobpostingFields[49].Descriptor()
 	// jobposting.DefaultParseConfidence holds the default value on creation for the parse_confidence field.
 	jobposting.DefaultParseConfidence = jobpostingDescParseConfidence.Default.(float64)
 	// jobpostingDescExtractor is the schema descriptor for extractor field.
-	jobpostingDescExtractor := jobpostingFields[49].Descriptor()
+	jobpostingDescExtractor := jobpostingFields[50].Descriptor()
 	// jobposting.DefaultExtractor holds the default value on creation for the extractor field.
 	jobposting.DefaultExtractor = jobpostingDescExtractor.Default.(string)
 	// jobposting.ExtractorValidator is a validator for the "extractor" field. It is called by the builders before save.
 	jobposting.ExtractorValidator = jobpostingDescExtractor.Validators[0].(func(string) error)
 	// jobpostingDescSnapshotPath is the schema descriptor for snapshot_path field.
-	jobpostingDescSnapshotPath := jobpostingFields[51].Descriptor()
+	jobpostingDescSnapshotPath := jobpostingFields[52].Descriptor()
 	// jobposting.DefaultSnapshotPath holds the default value on creation for the snapshot_path field.
 	jobposting.DefaultSnapshotPath = jobpostingDescSnapshotPath.Default.(string)
 	// jobposting.SnapshotPathValidator is a validator for the "snapshot_path" field. It is called by the builders before save.
 	jobposting.SnapshotPathValidator = jobpostingDescSnapshotPath.Validators[0].(func(string) error)
 	// jobpostingDescViewCount is the schema descriptor for view_count field.
-	jobpostingDescViewCount := jobpostingFields[52].Descriptor()
+	jobpostingDescViewCount := jobpostingFields[53].Descriptor()
 	// jobposting.DefaultViewCount holds the default value on creation for the view_count field.
 	jobposting.DefaultViewCount = jobpostingDescViewCount.Default.(int)
 	// jobpostingDescReviewerID is the schema descriptor for reviewer_id field.
-	jobpostingDescReviewerID := jobpostingFields[54].Descriptor()
+	jobpostingDescReviewerID := jobpostingFields[55].Descriptor()
 	// jobposting.ReviewerIDValidator is a validator for the "reviewer_id" field. It is called by the builders before save.
 	jobposting.ReviewerIDValidator = jobpostingDescReviewerID.Validators[0].(func(string) error)
 	// jobpostingDescRejectReason is the schema descriptor for reject_reason field.
-	jobpostingDescRejectReason := jobpostingFields[56].Descriptor()
+	jobpostingDescRejectReason := jobpostingFields[57].Descriptor()
 	// jobposting.DefaultRejectReason holds the default value on creation for the reject_reason field.
 	jobposting.DefaultRejectReason = jobpostingDescRejectReason.Default.(string)
 	// jobposting.RejectReasonValidator is a validator for the "reject_reason" field. It is called by the builders before save.
@@ -1087,88 +1099,70 @@ func init() {
 	user.UpdateDefaultUpdateTime = userDescUpdateTime.UpdateDefault.(func() time.Time)
 	// userDescEmail is the schema descriptor for email field.
 	userDescEmail := userFields[0].Descriptor()
+	// user.DefaultEmail holds the default value on creation for the email field.
+	user.DefaultEmail = userDescEmail.Default.(string)
 	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
-	user.EmailValidator = func() func(string) error {
-		validators := userDescEmail.Validators
-		fns := [...]func(string) error{
-			validators[0].(func(string) error),
-			validators[1].(func(string) error),
-		}
-		return func(email string) error {
-			for _, fn := range fns {
-				if err := fn(email); err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-	}()
+	user.EmailValidator = userDescEmail.Validators[0].(func(string) error)
 	// userDescPasswordHash is the schema descriptor for password_hash field.
 	userDescPasswordHash := userFields[1].Descriptor()
+	// user.DefaultPasswordHash holds the default value on creation for the password_hash field.
+	user.DefaultPasswordHash = userDescPasswordHash.Default.(string)
 	// user.PasswordHashValidator is a validator for the "password_hash" field. It is called by the builders before save.
-	user.PasswordHashValidator = func() func(string) error {
-		validators := userDescPasswordHash.Validators
-		fns := [...]func(string) error{
-			validators[0].(func(string) error),
-			validators[1].(func(string) error),
-		}
-		return func(password_hash string) error {
-			for _, fn := range fns {
-				if err := fn(password_hash); err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-	}()
+	user.PasswordHashValidator = userDescPasswordHash.Validators[0].(func(string) error)
+	// userDescSystemKey is the schema descriptor for system_key field.
+	userDescSystemKey := userFields[3].Descriptor()
+	// user.DefaultSystemKey holds the default value on creation for the system_key field.
+	user.DefaultSystemKey = userDescSystemKey.Default.(string)
+	// user.SystemKeyValidator is a validator for the "system_key" field. It is called by the builders before save.
+	user.SystemKeyValidator = userDescSystemKey.Validators[0].(func(string) error)
 	// userDescNickname is the schema descriptor for nickname field.
-	userDescNickname := userFields[2].Descriptor()
+	userDescNickname := userFields[4].Descriptor()
 	// user.DefaultNickname holds the default value on creation for the nickname field.
 	user.DefaultNickname = userDescNickname.Default.(string)
 	// user.NicknameValidator is a validator for the "nickname" field. It is called by the builders before save.
 	user.NicknameValidator = userDescNickname.Validators[0].(func(string) error)
 	// userDescAvatarURL is the schema descriptor for avatar_url field.
-	userDescAvatarURL := userFields[3].Descriptor()
+	userDescAvatarURL := userFields[5].Descriptor()
 	// user.DefaultAvatarURL holds the default value on creation for the avatar_url field.
 	user.DefaultAvatarURL = userDescAvatarURL.Default.(string)
 	// user.AvatarURLValidator is a validator for the "avatar_url" field. It is called by the builders before save.
 	user.AvatarURLValidator = userDescAvatarURL.Validators[0].(func(string) error)
 	// userDescPhone is the schema descriptor for phone field.
-	userDescPhone := userFields[4].Descriptor()
+	userDescPhone := userFields[6].Descriptor()
 	// user.PhoneValidator is a validator for the "phone" field. It is called by the builders before save.
 	user.PhoneValidator = userDescPhone.Validators[0].(func(string) error)
 	// userDescEmailVerified is the schema descriptor for email_verified field.
-	userDescEmailVerified := userFields[6].Descriptor()
+	userDescEmailVerified := userFields[8].Descriptor()
 	// user.DefaultEmailVerified holds the default value on creation for the email_verified field.
 	user.DefaultEmailVerified = userDescEmailVerified.Default.(bool)
 	// userDescLastLoginIP is the schema descriptor for last_login_ip field.
-	userDescLastLoginIP := userFields[9].Descriptor()
+	userDescLastLoginIP := userFields[11].Descriptor()
 	// user.DefaultLastLoginIP holds the default value on creation for the last_login_ip field.
 	user.DefaultLastLoginIP = userDescLastLoginIP.Default.(string)
 	// user.LastLoginIPValidator is a validator for the "last_login_ip" field. It is called by the builders before save.
 	user.LastLoginIPValidator = userDescLastLoginIP.Validators[0].(func(string) error)
 	// userDescRegisterIP is the schema descriptor for register_ip field.
-	userDescRegisterIP := userFields[10].Descriptor()
+	userDescRegisterIP := userFields[12].Descriptor()
 	// user.DefaultRegisterIP holds the default value on creation for the register_ip field.
 	user.DefaultRegisterIP = userDescRegisterIP.Default.(string)
 	// user.RegisterIPValidator is a validator for the "register_ip" field. It is called by the builders before save.
 	user.RegisterIPValidator = userDescRegisterIP.Validators[0].(func(string) error)
 	// userDescRegisterSource is the schema descriptor for register_source field.
-	userDescRegisterSource := userFields[11].Descriptor()
+	userDescRegisterSource := userFields[13].Descriptor()
 	// user.DefaultRegisterSource holds the default value on creation for the register_source field.
 	user.DefaultRegisterSource = userDescRegisterSource.Default.(string)
 	// user.RegisterSourceValidator is a validator for the "register_source" field. It is called by the builders before save.
 	user.RegisterSourceValidator = userDescRegisterSource.Validators[0].(func(string) error)
 	// userDescFailedLoginCount is the schema descriptor for failed_login_count field.
-	userDescFailedLoginCount := userFields[12].Descriptor()
+	userDescFailedLoginCount := userFields[14].Descriptor()
 	// user.DefaultFailedLoginCount holds the default value on creation for the failed_login_count field.
 	user.DefaultFailedLoginCount = userDescFailedLoginCount.Default.(int)
 	// userDescMustChangePassword is the schema descriptor for must_change_password field.
-	userDescMustChangePassword := userFields[15].Descriptor()
+	userDescMustChangePassword := userFields[17].Descriptor()
 	// user.DefaultMustChangePassword holds the default value on creation for the must_change_password field.
 	user.DefaultMustChangePassword = userDescMustChangePassword.Default.(bool)
 	// userDescRemark is the schema descriptor for remark field.
-	userDescRemark := userFields[16].Descriptor()
+	userDescRemark := userFields[18].Descriptor()
 	// user.DefaultRemark holds the default value on creation for the remark field.
 	user.DefaultRemark = userDescRemark.Default.(string)
 	// user.RemarkValidator is a validator for the "remark" field. It is called by the builders before save.

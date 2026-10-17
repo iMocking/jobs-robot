@@ -8,15 +8,19 @@
 // 从而避免出现两套互相打架的权限数据。
 package casbin
 
-// RoleAdmin / RoleReviewer / RoleUser 是系统预设的三种角色。
+// RoleAdmin / RoleReviewer / RoleUser / RoleSystem 是系统预设的角色。
+//
+// 注意 RoleSystem 只是一个「身份标记」：它不继承任何角色，也没有任何路径策略，
+// 用于把爬虫、邮件机器人等系统机器身份与真人账号区分开，并让审计有明确的归属。
 const (
 	RoleAdmin    = "admin"
 	RoleReviewer = "reviewer"
 	RoleUser     = "user"
+	RoleSystem   = "system"
 )
 
 // BuiltinRoles 是系统内置角色（顺序即权限从高到低）。
-var BuiltinRoles = []string{RoleAdmin, RoleReviewer, RoleUser}
+var BuiltinRoles = []string{RoleAdmin, RoleReviewer, RoleUser, RoleSystem}
 
 // IsBuiltinRole 判断是否内置角色。
 func IsBuiltinRole(name string) bool {
@@ -56,6 +60,9 @@ m = g(r.sub, p.sub) && keyMatch2(r.obj, p.obj) && (r.act == p.act || p.act == "*
 // defaultGroupingRules 预设的角色继承关系。
 //
 //	reviewer 继承 user 的全部权限，admin 继承 reviewer 的全部权限。
+//
+// system 刻意不在此表中：它是独立身份标记，不继承任何角色，
+// 因此 admin 的 /api/v1/* 兜底策略不会通过继承链落到系统身份上。
 var defaultGroupingRules = [][]string{
 	{"reviewer", RoleUser},
 	{RoleAdmin, RoleReviewer},
@@ -64,6 +71,8 @@ var defaultGroupingRules = [][]string{
 // defaultPolicies 预设的权限策略。
 //
 // 约定：obj 使用接口路径，act 使用 HTTP 方法；管理端接口统一挂在 /api/v1/admin 下。
+//
+// system 刻意没有任何策略：系统身份只用于审计归属，永远不能通过 HTTP 访问后台。
 var defaultPolicies = [][]string{
 	// —— 普通用户：浏览已发布岗位、维护自己的资料 ——
 	{RoleUser, "/api/v1/jobs", "GET"},

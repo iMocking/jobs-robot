@@ -10,6 +10,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jsong/jobs-robot/internal/auth"
@@ -97,9 +98,62 @@ type Actor struct {
 	Path      string
 }
 
-// SystemActor 表示由系统自动任务发起的操作（如定时抓取）。
+// SystemActor 表示由系统自动任务发起的操作（如定时抓取、配置播种）。
+//
+// 语义保持广泛：它泛指「不属于任何具体机器身份的系统动作」，
+// 没有 UserID，因此审计里 actor_id 为空、actor_email 为 "system"。
 func SystemActor() Actor {
 	return Actor{Email: "system"}
+}
+
+// systemActors 保存 bootstrap 时注册的机器身份 Actor（key → Actor）。
+//
+// 刻意用包级 map 而不是依赖注入：SystemActor() 的既有调用点都是静态构造，
+// 改成注入会把签名污染到一大片与身份无关的代码。写操作只在启动阶段发生，
+// 之后全部是读，用 RWMutex 足够。
+var (
+	systemActorsMu sync.RWMutex
+	systemActors   = make(map[string]Actor)
+)
+
+// RegisterSystemActor 在 bootstrap 时把系统身份注册为可用的 Actor。
+//
+// 注册后的 Actor 只带 UserID（系统身份没有邮箱），审计因此能通过 users 表
+// 解析出「Jobs AI Robot」这样的昵称，而不会写出一个虚假的邮箱。
+func RegisterSystemActor(key string, actor Actor) {
+	key = strings.TrimSpace(key)
+	if key == "" {
+		return
+	}
+	systemActorsMu.Lock()
+	defer systemActorsMu.Unlock()
+	systemActors[key] = actor
+}
+
+// SystemActorFor 返回指定系统身份；未注册时返回 SystemActor() 兜底。
+//
+// 兜底是必要的：单元测试、仅跑服务层的脚本或初始化失败时都可能没有注册，
+// 此时宁可按「无归属的系统操作」记录，也不要 panic 或静默丢失审计。
+func SystemActorFor(key string) Actor {
+	systemActorsMu.RLock()
+	actor, ok := systemActors[strings.TrimSpace(key)]
+	systemActorsMu.RUnlock()
+	if ok && actor.UserID != "" {
+		return actor
+	}
+	return SystemActor()
+}
+
+// systemActorID 返回指定系统身份的 ULID；未注册时返回 nil。
+//
+// 用于需要「可空操作人 ID」的字段（如岗位修订的 operator_id、抓取触发起源）。
+func systemActorID(key string) *string {
+	actor := SystemActorFor(key)
+	if actor.UserID == "" {
+		return nil
+	}
+	id := actor.UserID
+	return &id
 }
 
 // IsSystem 判断是否为系统操作：没有操作人 ID 且没有具体经办邮箱，即视为系统自动任务。

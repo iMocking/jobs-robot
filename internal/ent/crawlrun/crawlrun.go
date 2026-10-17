@@ -23,6 +23,8 @@ const (
 	FieldCompanyID = "company_id"
 	// FieldTrigger holds the string denoting the trigger field in the database.
 	FieldTrigger = "trigger"
+	// FieldTriggeredBy holds the string denoting the triggered_by field in the database.
+	FieldTriggeredBy = "triggered_by"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldSkipReason holds the string denoting the skip_reason field in the database.
@@ -84,6 +86,7 @@ var Columns = []string{
 	FieldUpdateTime,
 	FieldCompanyID,
 	FieldTrigger,
+	FieldTriggeredBy,
 	FieldStatus,
 	FieldSkipReason,
 	FieldStartedAt,
@@ -121,6 +124,8 @@ var (
 	UpdateDefaultUpdateTime func() time.Time
 	// CompanyIDValidator is a validator for the "company_id" field. It is called by the builders before save.
 	CompanyIDValidator func(string) error
+	// TriggeredByValidator is a validator for the "triggered_by" field. It is called by the builders before save.
+	TriggeredByValidator func(string) error
 	// DefaultSkipReason holds the default value on creation for the "skip_reason" field.
 	DefaultSkipReason string
 	// SkipReasonValidator is a validator for the "skip_reason" field. It is called by the builders before save.
@@ -241,6 +246,11 @@ func ByCompanyID(opts ...sql.OrderTermOption) OrderOption {
 // ByTrigger orders the results by the trigger field.
 func ByTrigger(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTrigger, opts...).ToFunc()
+}
+
+// ByTriggeredBy orders the results by the triggered_by field.
+func ByTriggeredBy(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTriggeredBy, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.

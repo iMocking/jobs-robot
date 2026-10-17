@@ -315,7 +315,7 @@ func (h *Handler) AdminTriggerCrawl(c *gin.Context) {
 //
 // POST /api/v1/admin/crawl/run-all
 func (h *Handler) AdminCrawlAll(c *gin.Context) {
-	views, err := h.svc.Crawl.CrawlAll(c.Request.Context(), "manual")
+	views, err := h.svc.Crawl.CrawlAll(c.Request.Context(), "manual", h.actor(c))
 	if err != nil {
 		response.Fail(c, err)
 		return
@@ -716,15 +716,16 @@ func (h *Handler) AdminRemovePolicy(c *gin.Context) {
 //   - 权限仅限管理员（审核员没有对应策略，会被 Casbin 拒绝）。
 
 type mailConfigRequest struct {
-	Driver        string `json:"driver" binding:"required,oneof=console smtp"`
-	FromName      string `json:"from_name"`
-	FromAddress   string `json:"from_address"`
-	Host          string `json:"host"`
-	Port          int    `json:"port"`
-	Username      string `json:"username"`
-	Password      string `json:"password"`
-	TLS           *bool  `json:"tls"`
-	ClearPassword bool   `json:"clear_password"`
+	Driver         string `json:"driver" binding:"required,oneof=console smtp"`
+	SystemFromName string `json:"system_from_name"`
+	FromName       string `json:"from_name"`
+	FromAddress    string `json:"from_address"`
+	Host           string `json:"host"`
+	Port           int    `json:"port"`
+	Username       string `json:"username"`
+	Password       string `json:"password"`
+	TLS            *bool  `json:"tls"`
+	ClearPassword  bool   `json:"clear_password"`
 }
 
 type mailTestRequest struct {
@@ -754,15 +755,16 @@ func (h *Handler) AdminSaveMailConfig(c *gin.Context) {
 	}
 
 	view, err := h.svc.Mail.Save(c.Request.Context(), service.MailConfigInput{
-		Driver:        req.Driver,
-		FromName:      req.FromName,
-		FromAddress:   req.FromAddress,
-		Host:          req.Host,
-		Port:          req.Port,
-		Username:      req.Username,
-		Password:      req.Password,
-		TLS:           req.TLS,
-		ClearPassword: req.ClearPassword,
+		Driver:         req.Driver,
+		SystemFromName: req.SystemFromName,
+		FromName:       req.FromName,
+		FromAddress:    req.FromAddress,
+		Host:           req.Host,
+		Port:           req.Port,
+		Username:       req.Username,
+		Password:       req.Password,
+		TLS:            req.TLS,
+		ClearPassword:  req.ClearPassword,
 	}, h.actor(c))
 	if err != nil {
 		response.Fail(c, err)

@@ -14,7 +14,6 @@ import AppInput from '@/components/AppInput.vue'
 import AppModal from '@/components/AppModal.vue'
 import AppPagination from '@/components/AppPagination.vue'
 import AppSelect from '@/components/AppSelect.vue'
-import PageHeader from '@/components/PageHeader.vue'
 import { useAdminRefresh } from '@/composables/useAdminRefresh'
 import { useAsync } from '@/composables/useAsync'
 import { useDictionaryStore } from '@/stores/dictionaries'
@@ -492,22 +491,6 @@ const TEXTAREA_CLASS =
 
 <template>
   <div>
-    <PageHeader
-      title="岗位管理"
-      description="不选状态即返回全部状态，便于一次看清整个岗位池；筛选条件会写进地址栏，可直接把链接发给同事复现同一份结果。"
-    >
-      <template #actions>
-        <AppButton variant="secondary" :loading="crawling" @click="runAll">
-          <AppIcon name="bolt" :size="16" />
-          全量抓取
-        </AppButton>
-        <AppButton @click="openCreate">
-          <AppIcon name="plus" :size="16" />
-          新增岗位
-        </AppButton>
-      </template>
-    </PageHeader>
-
     <!-- 筛选：状态一行摊开，关键词 / 类别 / 公司收在下面一行 -->
     <section class="card mb-4 p-4">
       <div class="flex flex-wrap items-center gap-2">
@@ -536,6 +519,17 @@ const TEXTAREA_CLASS =
             {{ counts[tab.key] }}
           </span>
         </button>
+
+        <div class="ml-auto flex items-center gap-2">
+          <AppButton variant="secondary" size="sm" :loading="crawling" @click="runAll">
+            <AppIcon name="bolt" :size="16" />
+            全量抓取
+          </AppButton>
+          <AppButton size="sm" @click="openCreate">
+            <AppIcon name="plus" :size="16" />
+            新增岗位
+          </AppButton>
+        </div>
       </div>
 
       <div class="mt-4 grid gap-3 border-t border-ink-100 pt-4 lg:grid-cols-[minmax(0,1fr)_200px_220px]">

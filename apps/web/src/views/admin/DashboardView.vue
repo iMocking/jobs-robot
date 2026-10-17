@@ -9,7 +9,6 @@ import AppEmpty from '@/components/AppEmpty.vue'
 import AppIcon from '@/components/AppIcon.vue'
 import BarChart from '@/components/BarChart.vue'
 import DonutChart from '@/components/DonutChart.vue'
-import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
 import { useAdminRefresh } from '@/composables/useAdminRefresh'
 import { useAsync } from '@/composables/useAsync'
@@ -183,15 +182,6 @@ const trendSum = computed(() => trend.value.reduce((sum, item) => sum + item.val
 
 <template>
   <div>
-    <PageHeader title="仪表盘" description="岗位池规模、状态分布与待处理事项一览">
-      <template #actions>
-        <AppButton variant="secondary" :loading="loading" @click="load()">
-          <AppIcon name="refresh" :size="16" />
-          刷新数据
-        </AppButton>
-      </template>
-    </PageHeader>
-
     <!-- 加载骨架：保持与真实内容一致的栅格，避免加载完成时页面跳动 -->
     <div v-if="loading && !ready" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <div v-for="index in 4" :key="index" class="card h-[116px] animate-pulse" />

@@ -1,0 +1,4 @@
+<item type="IMAGE" path="/deliverables/jobhub-ui/cursor-system" title="光标系统 v1 风格板" brief="JobHub 光标系统 v1 设计风格板：17 枚 SVG 光标统一「浅蓝渐变→品牌蓝+白色描边」家族语言，覆盖默认/可点击/文本/复制/移动/禁止/抓取/握紧/进行中/等待/四向缩放/准星/放大缩小等常规状态；悬停卡片可体验对应光标，CSS 变量与工具类见 apps/web/src/style.css 与 public/cursors/*.svg">
+  <size width="1027" height="1573"/>
+  <asset url="https://aka.doubaocdn.com/s/mzVeNXXWKP"/>
+</item>

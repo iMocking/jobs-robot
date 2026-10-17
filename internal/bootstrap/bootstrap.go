@@ -147,6 +147,24 @@ func Init(ctx context.Context, configPath string, opts Options) (*App, error) {
 		Sessions: app.Sessions,
 	})
 
+	// 系统机器身份（爬虫 / 邮件机器人）：与真人同表、无邮箱无密码、角色固定为 system。
+	//
+	// 必须在任何可能产生审计或抓取记录的动作之前完成：
+	// 之后的 SystemActorFor 才能拿到真实 ULID，审计与 crawl_runs.triggered_by
+	// 也才能解析回「Jobs AI Robot」而不是一个空操作人。
+	identities, err := app.Services.EnsureSystemIdentities(ctx)
+	if err != nil {
+		app.cleanup()
+		return nil, fmt.Errorf("初始化系统机器身份失败: %w", err)
+	}
+	for key, userID := range identities {
+		service.RegisterSystemActor(key, service.Actor{UserID: userID})
+	}
+
+	// 系统邮件的发件人显示名来自配置（system_from_name > from_name > no-reply），
+	// 与 mail 机器人身份无关：机器人只做审计归属，不出现在 From 头里。
+	dynamicMailer.SetFromName(mailCfg.EffectiveSystemFromName())
+
 	if opts.SeedSettings {
 		if err := app.Services.Setting.EnsureDefaults(ctx, service.SystemActor()); err != nil {
 			app.cleanup()

@@ -9,7 +9,6 @@ import AppEmpty from '@/components/AppEmpty.vue'
 import AppIcon from '@/components/AppIcon.vue'
 import AppPagination from '@/components/AppPagination.vue'
 import AppSelect from '@/components/AppSelect.vue'
-import PageHeader from '@/components/PageHeader.vue'
 import { useAdminRefresh } from '@/composables/useAdminRefresh'
 import { useAsync } from '@/composables/useAsync'
 import { useToastStore } from '@/stores/toast'
@@ -159,15 +158,6 @@ function changePage(next) {
 
 <template>
   <div>
-    <PageHeader title="系统监控" description="依赖健康状态、抓取运行记录与授权策略规模">
-      <template #actions>
-        <AppButton :loading="running" @click="runAll">
-          <AppIcon name="bolt" :size="16" />
-          全量抓取
-        </AppButton>
-      </template>
-    </PageHeader>
-
     <!-- 健康检查 -->
     <div
       v-if="health.loading.value && !health.ready.value"
@@ -216,20 +206,26 @@ function changePage(next) {
     <section class="mt-6">
       <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h2 class="text-[16px] font-semibold text-ink-900">抓取运行记录</h2>
-        <div class="w-[160px]">
-          <AppSelect
-            v-model="filters.status"
-            compact
-            placeholder="全部状态"
-            :options="[
-              { value: 'running', label: '进行中' },
-              { value: 'success', label: '成功' },
-              { value: 'partial', label: '部分成功' },
-              { value: 'failed', label: '失败' },
-              { value: 'skipped', label: '已跳过' },
-            ]"
-            @update:model-value="filters.page = 1; runs.run()"
-          />
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="w-[160px]">
+            <AppSelect
+              v-model="filters.status"
+              compact
+              placeholder="全部状态"
+              :options="[
+                { value: 'running', label: '进行中' },
+                { value: 'success', label: '成功' },
+                { value: 'partial', label: '部分成功' },
+                { value: 'failed', label: '失败' },
+                { value: 'skipped', label: '已跳过' },
+              ]"
+              @update:model-value="filters.page = 1; runs.run()"
+            />
+          </div>
+          <AppButton size="sm" :loading="running" @click="runAll">
+            <AppIcon name="bolt" :size="16" />
+            全量抓取
+          </AppButton>
         </div>
       </div>
 

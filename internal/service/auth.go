@@ -88,7 +88,12 @@ func (svc *AuthService) SendCode(ctx context.Context, email string, purpose auth
 	}
 
 	user, err := svc.s.Store.Ent.User.Query().
-		Where(entuser.EmailEQ(email)).
+		Where(
+			entuser.EmailEQ(email),
+			// 系统机器身份没有邮箱、也不能收验证码：显式排除，避免任何历史脏数据
+			// （例如被手工塞过邮箱的系统身份）把验证码发到机器账号上。
+			entuser.KindNEQ(entuser.KindSystem),
+		).
 		Only(ctx)
 	switch {
 	case err == nil:
@@ -120,7 +125,12 @@ func (svc *AuthService) SendCode(ctx context.Context, email string, purpose auth
 	}
 
 	label := labelOf(purpose)
-	if err := svc.s.Mailer.Send(ctx, mail.VerificationCodeMessage(email, issued.Code, label, svc.s.Codes.TTL())); err != nil {
+	recipientID := ""
+	if user != nil {
+		recipientID = user.ID
+	}
+	if err := svc.s.sendSystemMail(ctx, mailPurposeForCode(purpose), email, recipientID,
+		mail.VerificationCodeMessage(email, issued.Code, label, svc.s.Codes.TTL())); err != nil {
 		// 发信失败必须回滚验证码，否则用户拿不到码却要等冷却。
 		_ = svc.s.Codes.Invalidate(ctx, email, purpose)
 
@@ -159,7 +169,13 @@ func (svc *AuthService) Register(ctx context.Context, in RegisterInput) (*TokenR
 		return nil, err
 	}
 
-	exists, err := svc.s.Store.Ent.User.Query().Where(entuser.EmailEQ(email)).Exist(ctx)
+	exists, err := svc.s.Store.Ent.User.Query().
+		Where(
+			entuser.EmailEQ(email),
+			// 系统身份不参与真人注册的唯一性判定；真正撞车时仍由部分唯一索引兜底。
+			entuser.KindNEQ(entuser.KindSystem),
+		).
+		Exist(ctx)
 	if err != nil {
 		return nil, apperr.ErrInternal.WithCause(err)
 	}
@@ -193,6 +209,10 @@ func (svc *AuthService) Register(ctx context.Context, in RegisterInput) (*TokenR
 		SetEmail(email).
 		SetPasswordHash(hash).
 		SetNickname(truncateRunes(nickname, 64)).
+		// 注册入口只产生真人账号：kind/system_key 必须显式写成默认值，
+		// 不能依赖数据库默认值，避免将来新增字段时把真人误标成系统身份。
+		SetKind(entuser.KindHuman).
+		SetSystemKey("").
 		SetStatus(entuser.StatusActive).
 		SetEmailVerified(verified).
 		SetRegisterIP(truncateRunes(in.IP, 64)).
@@ -240,13 +260,26 @@ func (svc *AuthService) Login(ctx context.Context, in LoginInput) (*TokenResult,
 		return nil, apperr.ErrInvalidCredentials
 	}
 
-	user, err := svc.s.Store.Ent.User.Query().Where(entuser.EmailEQ(email)).Only(ctx)
+	// 系统机器身份没有邮箱与密码，必须与「账号不存在」表现完全一致：
+	// 走同一个凭据错误分支（含 dummy bcrypt），绝不泄露该身份是否存在。
+	user, err := svc.s.Store.Ent.User.Query().
+		Where(
+			entuser.EmailEQ(email),
+			entuser.KindNEQ(entuser.KindSystem),
+			entuser.EmailNEQ(""),
+		).
+		Only(ctx)
 	if ent.IsNotFound(err) {
 		auth.VerifyDummy(in.Password)
 		return nil, apperr.ErrInvalidCredentials
 	}
 	if err != nil {
 		return nil, apperr.ErrInternal.WithCause(err)
+	}
+	// 双保险：即使查询条件将来被改动，系统身份也绝不允许进入密码校验。
+	if user.Kind == entuser.KindSystem {
+		auth.VerifyDummy(in.Password)
+		return nil, apperr.ErrInvalidCredentials
 	}
 
 	// 锁定中直接拒绝，且不透露剩余时间以外的信息。
@@ -446,9 +479,10 @@ func (svc *AuthService) ChangePassword(ctx context.Context, userID string, oldPa
 		}
 	}
 
-	if err := svc.s.Mailer.Send(ctx, mail.PasswordResetDoneMessage(user.Email, time.Now())); err != nil {
-		// 通知邮件失败不影响改密结果。
-		svc.s.Audit.Record(ctx, SystemActor(), "auth.notify_mail_failed", "user", userID,
+	// 通知邮件失败不影响改密结果；mail.send 审计已由 sendSystemMail 记录。
+	if err := svc.s.sendSystemMail(ctx, mailPurposeNotifyPasswordReset, user.Email, userID,
+		mail.PasswordResetDoneMessage(user.Email, time.Now())); err != nil {
+		svc.s.Audit.Record(ctx, SystemActorFor(SystemKeyMail), "auth.notify_mail_failed", "user", userID,
 			map[string]any{"error": err.Error()})
 	}
 
@@ -471,7 +505,15 @@ func (svc *AuthService) ResetPassword(ctx context.Context, email, code, newPassw
 		return err
 	}
 
-	user, err := svc.s.Store.Ent.User.Query().Where(entuser.EmailEQ(email)).Only(ctx)
+	user, err := svc.s.Store.Ent.User.Query().
+		Where(
+			entuser.EmailEQ(email),
+			// 系统机器身份永远不能走「邮箱验证码重置密码」这条路径。
+			entuser.KindNEQ(entuser.KindSystem),
+			// 系统身份的 email 为空，这里再排除一次空邮箱，防御历史脏数据。
+			entuser.EmailNEQ(""),
+		).
+		Only(ctx)
 	if ent.IsNotFound(err) {
 		// 不暴露账号是否存在，但也不创建任何状态。
 		return apperr.ErrCodeInvalid
@@ -494,8 +536,9 @@ func (svc *AuthService) ResetPassword(ctx context.Context, email, code, newPassw
 	}
 	svc.markCodeUsed(ctx, email, auth.CodePurposeResetPassword)
 
-	if err := svc.s.Mailer.Send(ctx, mail.PasswordResetDoneMessage(user.Email, time.Now())); err != nil {
-		svc.s.Audit.Record(ctx, SystemActor(), "auth.notify_mail_failed", "user", user.ID,
+	if err := svc.s.sendSystemMail(ctx, mailPurposeNotifyPasswordReset, user.Email, user.ID,
+		mail.PasswordResetDoneMessage(user.Email, time.Now())); err != nil {
+		svc.s.Audit.Record(ctx, SystemActorFor(SystemKeyMail), "auth.notify_mail_failed", "user", user.ID,
 			map[string]any{"error": err.Error()})
 	}
 

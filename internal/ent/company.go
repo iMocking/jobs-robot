@@ -33,6 +33,8 @@ type Company struct {
 	CareersURL string `json:"careers_url,omitempty"`
 	// 发现 careers_url 的来源页面
 	DiscoveryURL string `json:"discovery_url,omitempty"`
+	// 招聘入口发现者：爬虫回填时为爬虫系统身份，管理员手工录入为空
+	DiscoveredBy *string `json:"discovered_by,omitempty"`
 	// LogoURL holds the value of the "logo_url" field.
 	LogoURL string `json:"logo_url,omitempty"`
 	// 所属行业，需命中爬虫收集范围白名单才采集
@@ -129,7 +131,7 @@ func (*Company) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case company.FieldPriority, company.FieldCrawlIntervalSeconds, company.FieldJobCount:
 			values[i] = new(sql.NullInt64)
-		case company.FieldID, company.FieldName, company.FieldShortName, company.FieldWebsite, company.FieldCareersURL, company.FieldDiscoveryURL, company.FieldLogoURL, company.FieldIndustry, company.FieldSubIndustry, company.FieldScale, company.FieldNature, company.FieldLocation, company.FieldDescription, company.FieldContactEmail, company.FieldContactPhone, company.FieldLastCrawlStatus, company.FieldLastCrawlError, company.FieldSource, company.FieldRemark:
+		case company.FieldID, company.FieldName, company.FieldShortName, company.FieldWebsite, company.FieldCareersURL, company.FieldDiscoveryURL, company.FieldDiscoveredBy, company.FieldLogoURL, company.FieldIndustry, company.FieldSubIndustry, company.FieldScale, company.FieldNature, company.FieldLocation, company.FieldDescription, company.FieldContactEmail, company.FieldContactPhone, company.FieldLastCrawlStatus, company.FieldLastCrawlError, company.FieldSource, company.FieldRemark:
 			values[i] = new(sql.NullString)
 		case company.FieldCreateTime, company.FieldUpdateTime, company.FieldLastCrawledAt, company.FieldRobotsCheckedAt:
 			values[i] = new(sql.NullTime)
@@ -195,6 +197,13 @@ func (_m *Company) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field discovery_url", values[i])
 			} else if value.Valid {
 				_m.DiscoveryURL = value.String
+			}
+		case company.FieldDiscoveredBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field discovered_by", values[i])
+			} else if value.Valid {
+				_m.DiscoveredBy = new(string)
+				*_m.DiscoveredBy = value.String
 			}
 		case company.FieldLogoURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -416,6 +425,11 @@ func (_m *Company) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("discovery_url=")
 	builder.WriteString(_m.DiscoveryURL)
+	builder.WriteString(", ")
+	if v := _m.DiscoveredBy; v != nil {
+		builder.WriteString("discovered_by=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("logo_url=")
 	builder.WriteString(_m.LogoURL)

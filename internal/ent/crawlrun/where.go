@@ -80,6 +80,11 @@ func CompanyID(v string) predicate.CrawlRun {
 	return predicate.CrawlRun(sql.FieldEQ(FieldCompanyID, v))
 }
 
+// TriggeredBy applies equality check predicate on the "triggered_by" field. It's identical to TriggeredByEQ.
+func TriggeredBy(v string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldEQ(FieldTriggeredBy, v))
+}
+
 // SkipReason applies equality check predicate on the "skip_reason" field. It's identical to SkipReasonEQ.
 func SkipReason(v string) predicate.CrawlRun {
 	return predicate.CrawlRun(sql.FieldEQ(FieldSkipReason, v))
@@ -313,6 +318,81 @@ func TriggerIn(vs ...Trigger) predicate.CrawlRun {
 // TriggerNotIn applies the NotIn predicate on the "trigger" field.
 func TriggerNotIn(vs ...Trigger) predicate.CrawlRun {
 	return predicate.CrawlRun(sql.FieldNotIn(FieldTrigger, vs...))
+}
+
+// TriggeredByEQ applies the EQ predicate on the "triggered_by" field.
+func TriggeredByEQ(v string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldEQ(FieldTriggeredBy, v))
+}
+
+// TriggeredByNEQ applies the NEQ predicate on the "triggered_by" field.
+func TriggeredByNEQ(v string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldNEQ(FieldTriggeredBy, v))
+}
+
+// TriggeredByIn applies the In predicate on the "triggered_by" field.
+func TriggeredByIn(vs ...string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldIn(FieldTriggeredBy, vs...))
+}
+
+// TriggeredByNotIn applies the NotIn predicate on the "triggered_by" field.
+func TriggeredByNotIn(vs ...string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldNotIn(FieldTriggeredBy, vs...))
+}
+
+// TriggeredByGT applies the GT predicate on the "triggered_by" field.
+func TriggeredByGT(v string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldGT(FieldTriggeredBy, v))
+}
+
+// TriggeredByGTE applies the GTE predicate on the "triggered_by" field.
+func TriggeredByGTE(v string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldGTE(FieldTriggeredBy, v))
+}
+
+// TriggeredByLT applies the LT predicate on the "triggered_by" field.
+func TriggeredByLT(v string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldLT(FieldTriggeredBy, v))
+}
+
+// TriggeredByLTE applies the LTE predicate on the "triggered_by" field.
+func TriggeredByLTE(v string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldLTE(FieldTriggeredBy, v))
+}
+
+// TriggeredByContains applies the Contains predicate on the "triggered_by" field.
+func TriggeredByContains(v string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldContains(FieldTriggeredBy, v))
+}
+
+// TriggeredByHasPrefix applies the HasPrefix predicate on the "triggered_by" field.
+func TriggeredByHasPrefix(v string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldHasPrefix(FieldTriggeredBy, v))
+}
+
+// TriggeredByHasSuffix applies the HasSuffix predicate on the "triggered_by" field.
+func TriggeredByHasSuffix(v string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldHasSuffix(FieldTriggeredBy, v))
+}
+
+// TriggeredByIsNil applies the IsNil predicate on the "triggered_by" field.
+func TriggeredByIsNil() predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldIsNull(FieldTriggeredBy))
+}
+
+// TriggeredByNotNil applies the NotNil predicate on the "triggered_by" field.
+func TriggeredByNotNil() predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldNotNull(FieldTriggeredBy))
+}
+
+// TriggeredByEqualFold applies the EqualFold predicate on the "triggered_by" field.
+func TriggeredByEqualFold(v string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldEqualFold(FieldTriggeredBy, v))
+}
+
+// TriggeredByContainsFold applies the ContainsFold predicate on the "triggered_by" field.
+func TriggeredByContainsFold(v string) predicate.CrawlRun {
+	return predicate.CrawlRun(sql.FieldContainsFold(FieldTriggeredBy, v))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.

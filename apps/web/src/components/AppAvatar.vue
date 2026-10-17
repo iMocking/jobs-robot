@@ -13,14 +13,24 @@ const props = defineProps({
   initial: { type: String, default: '' },
   tone: { type: String, default: 'brand' },
   size: { type: String, default: 'md' }, // sm | md | lg | xl
+  /**
+   * 圆形形态：用户头像用（与后台顶栏头像同款 rounded-full），
+   * 公司/职位头像保持圆角方形，避免「官网直招」语境被圆形弱化。
+   */
+  circle: { type: Boolean, default: false },
 })
 
-const SIZES = {
-  sm: 'size-8 rounded-lg text-[13px]',
-  md: 'size-11 rounded-xl text-[17px]',
-  lg: 'size-14 rounded-2xl text-[22px]',
-  xl: 'size-[68px] rounded-2xl text-[30px]',
+const SIZE_CLASS = {
+  sm: { base: 'size-8 text-[13px]', radius: 'rounded-lg' },
+  md: { base: 'size-11 text-[17px]', radius: 'rounded-xl' },
+  lg: { base: 'size-14 text-[22px]', radius: 'rounded-2xl' },
+  xl: { base: 'size-[68px] text-[30px]', radius: 'rounded-2xl' },
 }
+
+const sizeClass = computed(() => {
+  const item = SIZE_CLASS[props.size] ?? SIZE_CLASS.md
+  return `${item.base} ${props.circle ? 'rounded-full' : item.radius}`
+})
 
 const label = computed(() => props.initial || props.name.slice(0, 1).toUpperCase() || '?')
 </script>
@@ -28,7 +38,7 @@ const label = computed(() => props.initial || props.name.slice(0, 1).toUpperCase
 <template>
   <span
     class="inline-flex shrink-0 items-center justify-center font-semibold text-white"
-    :class="[SIZES[size], AVATAR_TONE[tone] ?? AVATAR_TONE.brand]"
+    :class="[sizeClass, AVATAR_TONE[tone] ?? AVATAR_TONE.brand]"
     :title="name || undefined"
   >
     {{ label }}

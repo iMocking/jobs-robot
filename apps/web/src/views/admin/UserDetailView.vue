@@ -71,11 +71,30 @@ const user = computed(() => data.value ?? null)
 const roleList = computed(() => roleData.value?.items ?? [])
 const actions = computed(() => actionPage.value?.items ?? [])
 
+/**
+ * 系统机器身份（爬虫 / 邮件机器人）：
+ * 可见、可审计，但任何后台写操作都必须隐藏入口（后端也会直接拒绝）。
+ */
+const isSystemIdentity = computed(() => user.value?.kind === 'system')
+
 /** 展示顺序固定，勾选行的顺序才不会随后端返回顺序抖动 */
-const ROLE_ORDER = ['admin', 'reviewer', 'user']
+const ROLE_ORDER = ['admin', 'reviewer', 'user', 'system']
 
 const roleRows = computed(() =>
-  ROLE_ORDER.map((key) => roleList.value.find((item) => item.name === key)).filter(Boolean),
+  ROLE_ORDER.map((key) => {
+    const row = roleList.value.find((item) => item.name === key)
+    if (row) return row
+    // roles 表还没播种时（全新库尚未执行 seed），系统身份详情页仍要能显示 system 这一行，
+    // 否则看起来像「没有任何角色」。普通用户不补这一行，避免把系统角色当成可授予项。
+    if (key === 'system' && isSystemIdentity.value) {
+      return {
+        name: 'system',
+        display_name: roleLabel('system'),
+        description: '系统内置机器身份（爬虫 / 邮件机器人）：不继承任何角色、不能登录、不能访问后台接口',
+      }
+    }
+    return null
+  }).filter(Boolean),
 )
 
 function load() {
@@ -304,10 +323,12 @@ const actionColumns = [
               <h1 class="text-[22px] font-semibold text-ink-900">{{ user.nickname || '未命名用户' }}</h1>
               <p class="mt-1 flex items-center gap-1.5 text-[13px] text-ink-500">
                 <AppIcon name="mail" :size="14" />
-                {{ user.email }}
+                {{ user.email || '系统身份（无邮箱）' }}
               </p>
 
               <div class="mt-3 flex flex-wrap items-center gap-2">
+                <!-- 系统机器身份标记：与角色徽标并列，一眼区分真人/机器 -->
+                <AppBadge v-if="isSystemIdentity" tone="teal">系统身份</AppBadge>
                 <AppBadge
                   v-for="role in user.roles ?? []"
                   :key="role"
@@ -335,6 +356,7 @@ const actionColumns = [
 
           <div class="flex flex-col items-start gap-2.5">
             <AppButton
+              v-if="!isSystemIdentity"
               variant="secondary"
               :loading="statusLoading"
               :disabled="isSelf"
@@ -342,16 +364,24 @@ const actionColumns = [
             >
               {{ statusActionLabel() }}
             </AppButton>
-            <AppButton variant="secondary" @click="openReset">
+            <AppButton v-if="!isSystemIdentity" variant="secondary" @click="openReset">
               <AppIcon name="key" :size="16" />
               重置密码
             </AppButton>
-            <AppButton variant="danger" :disabled="isSelf" @click="removeOpen = true">
+            <AppButton
+              v-if="!isSystemIdentity"
+              variant="danger"
+              :disabled="isSelf"
+              @click="removeOpen = true"
+            >
               <AppIcon name="trash" :size="16" />
               删除用户
             </AppButton>
 
-            <p v-if="isSelf" class="max-w-[220px] text-[12px] leading-relaxed text-ink-400">
+            <p v-if="isSystemIdentity" class="max-w-[240px] text-[12px] leading-relaxed text-ink-400">
+              系统机器身份由系统自动维护：不能禁用、删除、改角色或重置密码（它本来也没有密码与邮箱）。
+            </p>
+            <p v-else-if="isSelf" class="max-w-[220px] text-[12px] leading-relaxed text-ink-400">
               这是当前登录账号，不能禁用或删除自己（否则会立刻失去后台入口）；系统也会拒绝移除最后一名管理员。
             </p>
           </div>
@@ -367,15 +397,24 @@ const actionColumns = [
               角色变更会立即让该用户的令牌失效，避免权限已被收回却仍能操作。
             </p>
           </div>
-          <AppButton :loading="savingRoles" :disabled="!rolesDirty" @click="saveRoles">
+          <AppButton
+            :loading="savingRoles"
+            :disabled="!rolesDirty || isSystemIdentity"
+            @click="saveRoles"
+          >
             保存角色
           </AppButton>
         </div>
+
+        <p v-if="isSystemIdentity" class="mt-3 rounded-xl bg-page px-3.5 py-2.5 text-[12.5px] leading-relaxed text-ink-500">
+          系统身份的「系统」角色是固定的：它不继承任何角色、没有后台路径权限，仅用于审计归属，因此不可修改。
+        </p>
 
         <div v-if="roleRows.length" class="mt-5 divide-y divide-ink-100">
           <div v-for="row in roleRows" :key="row.name" class="flex items-start gap-3 py-3.5">
             <AppCheckbox
               :model-value="selectedRoles.includes(row.name)"
+              :disabled="isSystemIdentity"
               @update:model-value="toggleRole(row.name, $event)"
             />
             <div class="min-w-0">

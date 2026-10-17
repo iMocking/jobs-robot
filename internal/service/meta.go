@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jsong/jobs-robot/internal/ent"
 	"github.com/jsong/jobs-robot/internal/ent/company"
 	"github.com/jsong/jobs-robot/internal/ent/crawlrun"
 	"github.com/jsong/jobs-robot/internal/ent/jobposting"
@@ -65,6 +66,7 @@ func (svc *MetaService) Dictionaries(ctx context.Context) (MetaView, error) {
 			{Value: "admin", Label: "管理员"},
 			{Value: "reviewer", Label: "审核员"},
 			{Value: "user", Label: "用户"},
+			{Value: "system", Label: "系统"},
 		},
 		CrawlStatuses: []MetaOption{
 			{Value: string(crawlrun.StatusRunning), Label: "执行中"},
@@ -128,7 +130,11 @@ type SystemMailStatus struct {
 func (svc *MetaService) SystemStatus(ctx context.Context) (SystemStatusView, error) {
 	var out SystemStatusView
 
-	userCount, err := svc.s.Store.Ent.User.Query().Count(ctx)
+	// user_count 是「真实用户数」：系统机器身份（爬虫/邮件机器人）不计入，
+	// 否则前端会把它们当成需要运营维护的账号。
+	userCount, err := svc.s.Store.Ent.User.Query().
+		Where(entuser.KindNEQ(entuser.KindSystem)).
+		Count(ctx)
 	if err != nil {
 		return out, apperr.ErrInternal.WithCause(err)
 	}
@@ -236,16 +242,20 @@ func (svc *MetaService) Stats(ctx context.Context) (StatsView, error) {
 	var out StatsView
 	var err error
 
-	if out.Users.Total, err = client.User.Query().Count(ctx); err != nil {
+	// 用户维度统计一律排除系统机器身份，与 /system/status 的 user_count 口径一致。
+	humanUsers := func() *ent.UserQuery {
+		return client.User.Query().Where(entuser.KindNEQ(entuser.KindSystem))
+	}
+	if out.Users.Total, err = humanUsers().Count(ctx); err != nil {
 		return out, apperr.ErrInternal.WithCause(err)
 	}
-	if out.Users.Active, err = client.User.Query().Where(entuser.StatusEQ(entuser.StatusActive)).Count(ctx); err != nil {
+	if out.Users.Active, err = humanUsers().Where(entuser.StatusEQ(entuser.StatusActive)).Count(ctx); err != nil {
 		return out, apperr.ErrInternal.WithCause(err)
 	}
-	if out.Users.Disabled, err = client.User.Query().Where(entuser.StatusEQ(entuser.StatusDisabled)).Count(ctx); err != nil {
+	if out.Users.Disabled, err = humanUsers().Where(entuser.StatusEQ(entuser.StatusDisabled)).Count(ctx); err != nil {
 		return out, apperr.ErrInternal.WithCause(err)
 	}
-	if out.Users.Locked, err = client.User.Query().Where(entuser.StatusEQ(entuser.StatusLocked)).Count(ctx); err != nil {
+	if out.Users.Locked, err = humanUsers().Where(entuser.StatusEQ(entuser.StatusLocked)).Count(ctx); err != nil {
 		return out, apperr.ErrInternal.WithCause(err)
 	}
 

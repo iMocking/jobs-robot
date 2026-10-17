@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/jsong/jobs-robot/internal/ent"
+	entuser "github.com/jsong/jobs-robot/internal/ent/user"
 )
 
 // 本文件定义对外 API 的视图模型（DTO）。
@@ -16,16 +17,20 @@ import (
 
 // UserView 是用户信息视图。
 type UserView struct {
-	ID            string     `json:"id"`
-	Email         string     `json:"email"`
-	Nickname      string     `json:"nickname"`
-	AvatarURL     string     `json:"avatar_url"`
-	Phone         string     `json:"phone,omitempty"`
-	Status        string     `json:"status"`
-	EmailVerified bool       `json:"email_verified"`
-	Roles         []string   `json:"roles"`
-	LastLoginAt   *time.Time `json:"last_login_at,omitempty"`
-	Remark        string     `json:"remark,omitempty"`
+	ID            string `json:"id"`
+	Email         string `json:"email"`
+	Nickname      string `json:"nickname"`
+	AvatarURL     string `json:"avatar_url"`
+	Phone         string `json:"phone,omitempty"`
+	Status        string `json:"status"`
+	EmailVerified bool   `json:"email_verified"`
+	// Kind 区分真人账号与系统机器身份（human/system）；前端据此展示「系统」标记
+	// 并隐藏禁用、删除、改角色、重置密码等操作入口。
+	Kind        string     `json:"kind"`
+	SystemKey   string     `json:"system_key"`
+	Roles       []string   `json:"roles"`
+	LastLoginAt *time.Time `json:"last_login_at,omitempty"`
+	Remark      string     `json:"remark,omitempty"`
 	// MustChangePassword 为 true 时前端应在登录后提示「请修改初始密码」。
 	// 该标记由「首次启动自举的管理员」或「被提升为管理员的既有账号」置位，
 	// 用户成功改密后自动清零。
@@ -46,6 +51,8 @@ func NewUserView(u *ent.User, roles []string) UserView {
 		AvatarURL:          u.AvatarURL,
 		Status:             string(u.Status),
 		EmailVerified:      u.EmailVerified,
+		Kind:               string(u.Kind),
+		SystemKey:          u.SystemKey,
 		Roles:              roles,
 		LastLoginAt:        u.LastLoginAt,
 		Remark:             u.Remark,
@@ -224,6 +231,8 @@ type JobListView struct {
 	ApplyURL     string `json:"apply_url,omitempty"`
 	SourceURL    string `json:"source_url"`
 	SourceSite   string `json:"source_site,omitempty"`
+	// CreatedBy 是创建者用户 ULID：抓取入库为爬虫系统身份，后台手工创建为管理员。
+	CreatedBy *string `json:"created_by,omitempty"`
 
 	Status       string `json:"status"`
 	QualityScore int    `json:"quality_score"`
@@ -254,6 +263,7 @@ func NewJobListView(j *ent.JobPosting) JobListView {
 		ApplyURL:       j.ApplyURL,
 		SourceURL:      j.SourceURL,
 		SourceSite:     j.SourceSite,
+		CreatedBy:      j.CreatedBy,
 		Status:         string(j.Status),
 		QualityScore:   j.QualityScore,
 		ViewCount:      j.ViewCount,
@@ -385,10 +395,12 @@ func NewRevisionView(r *ent.JobRevision) RevisionView {
 
 // CrawlRunView 是抓取运行记录视图。
 type CrawlRunView struct {
-	ID            string         `json:"id"`
-	CompanyID     string         `json:"company_id"`
-	CompanyName   string         `json:"company_name,omitempty"`
-	Trigger       string         `json:"trigger"`
+	ID          string `json:"id"`
+	CompanyID   string `json:"company_id"`
+	CompanyName string `json:"company_name,omitempty"`
+	Trigger     string `json:"trigger"`
+	// TriggeredBy 是触发者用户 ULID：手动触发为管理员，定时/自动为爬虫系统身份。
+	TriggeredBy   *string        `json:"triggered_by,omitempty"`
 	Status        string         `json:"status"`
 	SkipReason    string         `json:"skip_reason,omitempty"`
 	CareersURL    string         `json:"careers_url,omitempty"`
@@ -413,6 +425,7 @@ func NewCrawlRunView(r *ent.CrawlRun) CrawlRunView {
 		ID:            r.ID,
 		CompanyID:     r.CompanyID,
 		Trigger:       string(r.Trigger),
+		TriggeredBy:   r.TriggeredBy,
 		Status:        string(r.Status),
 		SkipReason:    r.SkipReason,
 		CareersURL:    r.CareersURL,
@@ -494,9 +507,12 @@ func NewSettingView(s *ent.Setting) SettingView {
 
 // AuditLogView 是审计日志视图。
 type AuditLogView struct {
-	ID         string         `json:"id"`
-	ActorID    *string        `json:"actor_id,omitempty"`
-	ActorEmail string         `json:"actor_email,omitempty"`
+	ID         string  `json:"id"`
+	ActorID    *string `json:"actor_id,omitempty"`
+	ActorEmail string  `json:"actor_email,omitempty"`
+	// ActorName 在 actor_id 命中系统机器身份时填其昵称（如 "Jobs AI Robot"），
+	// 便于日志列表直接显示机器身份；普通用户留空，由前端展示邮箱。
+	ActorName  string         `json:"actor_name,omitempty"`
 	Action     string         `json:"action"`
 	Resource   string         `json:"resource,omitempty"`
 	ResourceID string         `json:"resource_id,omitempty"`
@@ -512,7 +528,7 @@ type AuditLogView struct {
 
 // NewAuditLogView 组装审计日志视图。
 func NewAuditLogView(l *ent.AuditLog) AuditLogView {
-	return AuditLogView{
+	v := AuditLogView{
 		ID:         l.ID,
 		ActorID:    l.ActorID,
 		ActorEmail: l.ActorEmail,
@@ -528,4 +544,10 @@ func NewAuditLogView(l *ent.AuditLog) AuditLogView {
 		Detail:     l.Detail,
 		CreatedAt:  l.CreateTime,
 	}
+	// 只有系统身份才回填昵称：普通用户已有 actor_email，再塞昵称会让日志列表
+	// 同时出现「邮箱 + 人名」两套标识，反而难扫读。
+	if actor := l.Edges.Actor; actor != nil && actor.Kind == entuser.KindSystem {
+		v.ActorName = actor.Nickname
+	}
+	return v
 }
