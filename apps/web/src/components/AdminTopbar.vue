@@ -1,10 +1,9 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import AppIcon from '@/components/AppIcon.vue'
-import { useSessionStore } from '@/stores/session'
-import { userInitial } from '@/utils/format'
+import AppUserMenu from '@/components/AppUserMenu.vue'
 
 /**
  * 后台顶栏：面包屑 + 刷新 + 管理员菜单。
@@ -25,16 +24,18 @@ const emit = defineEmits(['refresh'])
 
 const route = useRoute()
 const router = useRouter()
-const session = useSessionStore()
-
-const menuOpen = ref(false)
 
 const pageTitle = computed(() => String(route.meta?.title ?? '').split(' · ')[0] || '仪表盘')
 
-async function logout() {
-  menuOpen.value = false
-  await session.logout()
-  router.push({ name: 'login' })
+/** 后台菜单项：个人中心进前台账户页；访问前台由顶栏交给 AppUserMenu，点击后跳首页 */
+const ADMIN_MENU = [
+  { key: 'profile', label: '个人中心', icon: 'user' },
+  { key: 'front', label: '访问前台', icon: 'external-link' },
+]
+
+function onMenuClick(item) {
+  if (item.key === 'profile') router.push({ name: 'account' })
+  else if (item.key === 'front') router.push({ name: 'home' })
 }
 </script>
 
@@ -59,50 +60,12 @@ async function logout() {
         刷新
       </button>
 
-      <div class="relative">
-        <button
-          type="button"
-          class="flex size-9 items-center justify-center rounded-full bg-brand-600 text-[14px] font-semibold text-white transition hover:bg-brand-700"
-          :aria-expanded="menuOpen"
-          aria-haspopup="menu"
-          @click="menuOpen = !menuOpen"
-        >
-          {{ userInitial(session.user) }}
-        </button>
-
-        <template v-if="menuOpen">
-          <div class="fixed inset-0 z-10" @click="menuOpen = false" />
-          <div
-            class="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-xl border border-ink-200 bg-white py-1.5 shadow-panel"
-            role="menu"
-          >
-            <div class="border-b border-ink-100 px-4 py-2.5">
-              <p class="truncate text-[13.5px] font-medium text-ink-800">
-                {{ session.user?.nickname || '管理员' }}
-              </p>
-              <p class="truncate text-[12px] text-ink-400">{{ session.user?.email }}</p>
-            </div>
-            <RouterLink
-              :to="{ name: 'home' }"
-              class="flex items-center gap-2.5 px-4 py-2.5 text-[13.5px] text-ink-600 transition hover:bg-ink-50"
-              role="menuitem"
-              @click="menuOpen = false"
-            >
-              <AppIcon name="external-link" :size="16" />
-              访问前台
-            </RouterLink>
-            <button
-              type="button"
-              class="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13.5px] text-red-600 transition hover:bg-red-50"
-              role="menuitem"
-              @click="logout"
-            >
-              <AppIcon name="logout" :size="16" />
-              退出登录
-            </button>
-          </div>
-        </template>
-      </div>
+      <AppUserMenu
+        :items="ADMIN_MENU"
+        nickname-fallback="管理员"
+        logout-route="login"
+        @item-click="onMenuClick"
+      />
     </div>
   </header>
 </template>

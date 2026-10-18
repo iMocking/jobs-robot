@@ -345,9 +345,9 @@ const TEXTAREA_ROW = 'grid gap-4 py-3.5 sm:grid-cols-[160px_1fr]'
     </RouterLink>
 
     <!-- 首次加载骨架 -->
-    <div v-if="loading && !ready" class="space-y-5">
+    <div v-if="loading && !ready" class="space-y-2.5">
       <div class="card h-[190px] animate-pulse" />
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div class="grid gap-2.5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div class="card h-[640px] animate-pulse" />
         <div class="card h-[380px] animate-pulse" />
       </div>
@@ -368,7 +368,7 @@ const TEXTAREA_ROW = 'grid gap-4 py-3.5 sm:grid-cols-[160px_1fr]'
 
     <template v-else-if="job">
       <!-- 头部：身份 + 状态 + 动作，一屏之内决定这条岗位接下来怎么处理 -->
-      <section class="card mb-5 p-6">
+      <section class="card mb-2.5 p-6">
         <div class="flex flex-wrap items-start gap-5">
           <AppAvatar
             size="lg"
@@ -607,7 +607,7 @@ const TEXTAREA_ROW = 'grid gap-4 py-3.5 sm:grid-cols-[160px_1fr]'
         </section>
 
         <!-- 右：溯源 + 变更历史 -->
-        <aside class="space-y-5">
+        <aside class="space-y-2.5">
           <section class="card p-5">
             <h2 class="text-[15px] font-semibold text-ink-900">溯源信息</h2>
             <p class="mt-1 text-[12.5px] leading-relaxed text-ink-400">

@@ -156,7 +156,7 @@ async function submitRemove() {
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+    <div class="mb-2 flex flex-wrap items-start justify-between gap-3">
       <div>
         <h2 class="text-[16px] font-semibold text-ink-900">高级配置</h2>
         <p class="mt-1 text-[12.5px] leading-relaxed text-ink-400">

@@ -175,6 +175,11 @@ func Init(ctx context.Context, configPath string, opts Options) (*App, error) {
 			app.cleanup()
 			return nil, err
 		}
+		// 图片服务配置同样落库为基线，之后由后台在线修改（本地目录 / OSS）。
+		if err := app.Services.Image.EnsureDefaults(ctx, service.SystemActor()); err != nil {
+			app.cleanup()
+			return nil, err
+		}
 	}
 
 	// 自动自举初始管理员：必须在构造爬虫之前完成，让「HTTP 服务已启动」的

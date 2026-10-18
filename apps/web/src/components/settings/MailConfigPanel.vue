@@ -394,7 +394,7 @@ const DRIVERS = [
 
 <template>
   <div>
-    <div v-if="loading && !ready" class="space-y-4">
+    <div v-if="loading && !ready" class="space-y-2">
       <div class="h-24 animate-pulse rounded-card bg-ink-100" />
       <div class="h-64 animate-pulse rounded-card bg-ink-100" />
     </div>
@@ -410,7 +410,7 @@ const DRIVERS = [
 
     <template v-else>
       <!-- 当前生效状态：先回答「现在到底是什么在发信」 -->
-      <section class="card mb-5 p-5">
+      <section class="card mb-2.5 p-5">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">
@@ -444,7 +444,7 @@ const DRIVERS = [
       </section>
 
       <!-- 驱动选择 -->
-      <section class="card mb-5 p-6">
+      <section class="card mb-2.5 p-6">
         <h2 class="text-[16px] font-semibold text-ink-900">投递方式</h2>
         <p class="mt-1 mb-4 text-[12.5px] text-ink-400">
           验证码、密码重置通知都走这里。开发阶段用 console 即可，上线前切到 SMTP。
@@ -488,7 +488,7 @@ const DRIVERS = [
       </section>
 
       <!-- SMTP 参数 -->
-      <section class="card mb-5 p-6">
+      <section class="card mb-2.5 p-6">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 class="text-[16px] font-semibold text-ink-900">发件与 SMTP 参数</h2>

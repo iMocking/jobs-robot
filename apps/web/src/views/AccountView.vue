@@ -10,6 +10,7 @@ import AppButton from '@/components/AppButton.vue'
 import AppEmpty from '@/components/AppEmpty.vue'
 import AppIcon from '@/components/AppIcon.vue'
 import AppInput from '@/components/AppInput.vue'
+import AvatarUploadTrigger from '@/components/AvatarUploadTrigger.vue'
 import { useAsync } from '@/composables/useAsync'
 import { useSessionStore } from '@/stores/session'
 import { useToastStore } from '@/stores/toast'
@@ -73,10 +74,12 @@ const roleItems = computed(() =>
 /**
  * 用户头像：个人中心用深蓝底白字（与后台顶栏头像同款视觉，设计稿一致），
  * 不再按 email 派生彩色 —— 顶栏、资料卡、表单头像三处必须同色。
+ * 已上传自定义头像时 avatar_url 有值，优先显示图片。
  */
 const userAvatar = computed(() => ({
   initial: userInitial(session.user),
   tone: 'brand',
+  avatarUrl: session.user?.avatar_url ?? '',
 }))
 
 /** 最近登录：UserView 只有 last_login_at（无注册时间字段），没有就显示占位，不编造 */
@@ -86,8 +89,21 @@ const lastLoginText = computed(() => {
 })
 
 /* -------------------------------------------------------------------------- */
+/* 头像上传：由共用组件 AvatarUploadTrigger 承载（hover 蒙版 + 裁剪 + 上传）     */
+/* 左栏蒙版直接点击；右栏「更换头像」按钮通过 ref 调用 openPicker()              */
+/* -------------------------------------------------------------------------- */
+
+const avatarUploader = ref(null)
+
+/* -------------------------------------------------------------------------- */
 /* 资料设置                                                                    */
 /* -------------------------------------------------------------------------- */
+
+/**
+ * B 站式资料卡：默认是**展示态**（昵称/手机号以文本呈现），
+ * 点「编辑」才切换为输入框 + 保存/取消，而不是一进来就是一堆表单。
+ */
+const editingProfile = ref(false)
 
 const profile = reactive({
   nickname: session.user?.nickname ?? '',
@@ -96,6 +112,21 @@ const profile = reactive({
 
 const profileErrors = reactive({ nickname: '', phone: '' })
 const savingProfile = ref(false)
+
+/** 进入编辑态：用当前用户数据刷新表单（取消后再次编辑拿到的必须是最新的） */
+function startEditProfile() {
+  profile.nickname = session.user?.nickname ?? ''
+  profile.phone = session.user?.phone ?? ''
+  profileErrors.nickname = ''
+  profileErrors.phone = ''
+  editingProfile.value = true
+}
+
+function cancelEditProfile() {
+  editingProfile.value = false
+  profileErrors.nickname = ''
+  profileErrors.phone = ''
+}
 
 function validateProfile() {
   profileErrors.nickname = ''
@@ -118,6 +149,7 @@ async function saveProfile() {
   savingProfile.value = true
   try {
     await session.updateProfile({ nickname: profile.nickname.trim(), phone: profile.phone.trim() })
+    editingProfile.value = false
     toast.success('资料已保存')
   } catch (err) {
     toast.fromError(err, '资料保存失败，请稍后重试')
@@ -341,10 +373,13 @@ async function handleLogout() {
       <aside class="space-y-6">
         <section class="card p-6">
           <div class="flex flex-col items-center text-center">
-            <AppAvatar
-              :name="session.displayName"
+            <!-- 经典 hover 蒙版：移入头像显示压暗蒙版 + 居中摄像机图标，点击唤起上传 -->
+            <AvatarUploadTrigger
+              ref="avatarUploader"
+              :avatar-url="userAvatar.avatarUrl"
               :initial="userAvatar.initial"
               :tone="userAvatar.tone"
+              :name="session.displayName"
               size="xl"
               circle
             />
@@ -397,24 +432,79 @@ async function handleLogout() {
       <div class="min-w-0 space-y-6">
         <template v-if="activeTab === 'profile'">
           <section class="card p-6">
-            <h2 class="text-[16px] font-semibold text-ink-900">个人资料</h2>
-            <p class="mt-1 text-[13px] text-ink-500">
-              昵称会出现在你的账号中；手机号是选填项，留空即不公开。
-            </p>
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 class="text-[16px] font-semibold text-ink-900">个人资料</h2>
+                <p class="mt-1 text-[13px] text-ink-500">
+                  昵称会出现在你的账号中；手机号是选填项，留空即不公开。
+                </p>
+              </div>
+              <AppButton v-if="!editingProfile" variant="secondary" size="sm" @click="startEditProfile">
+                <AppIcon name="pencil" :size="14" />
+                编辑
+              </AppButton>
+            </div>
 
-            <div class="mt-5 space-y-4">
-              <div class="flex items-center gap-3">
+            <!-- 展示态：默认先看内容，不直接铺输入框（与 B 站资料卡同款交互） -->
+            <div v-if="!editingProfile" class="mt-5 divide-y divide-ink-100">
+              <div class="flex flex-wrap items-center gap-3 py-3 first:pt-0">
                 <span class="w-16 shrink-0 text-[13.5px] text-ink-500">头像</span>
                 <AppAvatar
                   :name="session.displayName"
                   :initial="userAvatar.initial"
                   :tone="userAvatar.tone"
+                  :avatar-url="userAvatar.avatarUrl"
                   size="sm"
                   circle
                 />
-                <span class="text-[12.5px] text-ink-400">
-                  头像默认为昵称首字，暂不支持自定义上传。
-                </span>
+                <AppButton
+                  variant="ghost"
+                  size="sm"
+                  :loading="avatarUploader?.uploading"
+                  @click="avatarUploader?.openPicker()"
+                >
+                  <AppIcon name="camera" :size="14" />
+                  更换头像
+                </AppButton>
+                <span class="text-[12.5px] text-ink-400">仅支持 JPG / PNG / GIF / WebP，不超过 10MB。</span>
+              </div>
+              <div class="flex items-center gap-3 py-3">
+                <span class="w-16 shrink-0 text-[13.5px] text-ink-500">昵称</span>
+                <span class="text-[14px] text-ink-800">{{ profile.nickname || '—' }}</span>
+              </div>
+              <div class="flex items-center gap-3 py-3">
+                <span class="w-16 shrink-0 text-[13.5px] text-ink-500">手机号</span>
+                <span class="text-[14px] text-ink-800">{{ profile.phone || '未设置' }}</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-3 py-3">
+                <span class="w-16 shrink-0 text-[13.5px] text-ink-500">邮箱</span>
+                <span class="text-[14px] text-ink-800">{{ session.user?.email }}</span>
+                <span class="text-[12.5px] text-ink-400">邮箱同时是登录账号，暂不支持修改。</span>
+              </div>
+            </div>
+
+            <!-- 编辑态：点「编辑」后进入 -->
+            <div v-else class="mt-5 space-y-4">
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="w-16 shrink-0 text-[13.5px] text-ink-500">头像</span>
+                <AppAvatar
+                  :name="session.displayName"
+                  :initial="userAvatar.initial"
+                  :tone="userAvatar.tone"
+                  :avatar-url="userAvatar.avatarUrl"
+                  size="sm"
+                  circle
+                />
+                <AppButton
+                  variant="ghost"
+                  size="sm"
+                  :loading="avatarUploader?.uploading"
+                  @click="avatarUploader?.openPicker()"
+                >
+                  <AppIcon name="camera" :size="14" />
+                  更换头像
+                </AppButton>
+                <span class="text-[12.5px] text-ink-400">仅支持 JPG / PNG / GIF / WebP，不超过 10MB。</span>
               </div>
               <AppInput
                 v-model="profile.nickname"
@@ -430,12 +520,15 @@ async function handleLogout() {
                 inputmode="tel"
                 :error="profileErrors.phone"
               />
+
+              <div class="flex flex-wrap items-center gap-3 border-t border-ink-100 pt-5">
+                <AppButton :loading="savingProfile" @click="saveProfile">保存修改</AppButton>
+                <AppButton variant="ghost" :disabled="savingProfile" @click="cancelEditProfile">
+                  取消
+                </AppButton>
+              </div>
             </div>
 
-            <div class="mt-6 flex flex-wrap items-center gap-3 border-t border-ink-100 pt-5">
-              <AppButton :loading="savingProfile" @click="saveProfile">保存修改</AppButton>
-              <span class="text-[12.5px] text-ink-400">邮箱同时是登录账号，暂不支持修改。</span>
-            </div>
           </section>
         </template>
 

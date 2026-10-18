@@ -200,7 +200,7 @@ const TEXTAREA_CLASS =
 <template>
   <div>
     <!-- 队列规模：分页不影响这两个数字 -->
-    <div class="mb-4 grid gap-4 sm:grid-cols-2">
+    <div class="mb-2 grid gap-2 sm:grid-cols-2">
       <div class="card flex items-center gap-3.5 p-4">
         <span
           class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600"

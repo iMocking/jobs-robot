@@ -41,6 +41,8 @@ type Services struct {
 	Meta    *MetaService
 	Audit   *AuditService
 	Mail    *MailService
+	// Image 是图片服务：本地/OSS 存储配置（后台在线修改、立即热生效）与头像上传。
+	Image *ImageService
 	// Setup 是首次安装向导：建管理员 + 落邮件配置 + 试发测试邮件。
 	Setup *SetupService
 }
@@ -80,6 +82,7 @@ func New(p Params) *Services {
 	s.Crawl = &CrawlService{s: s}
 	s.Meta = &MetaService{s: s}
 	s.Mail = &MailService{s: s}
+	s.Image = &ImageService{s: s}
 	s.Setup = &SetupService{s: s}
 	return s
 }

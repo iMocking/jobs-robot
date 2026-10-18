@@ -189,7 +189,7 @@ async function submitDelete() {
 <template>
   <div>
     <!-- 筛选 -->
-    <div class="card mb-5 flex flex-wrap items-center gap-3 p-4">
+    <div class="card mb-2.5 flex flex-wrap items-center gap-3 p-4">
       <div class="min-w-[240px] flex-1">
         <AppInput v-model="filters.keyword" icon="search" placeholder="搜索邮箱 / 昵称" />
       </div>

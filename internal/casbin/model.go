@@ -80,7 +80,9 @@ var defaultPolicies = [][]string{
 	{RoleUser, "/api/v1/companies", "GET"},
 	{RoleUser, "/api/v1/companies/:id", "GET"},
 	{RoleUser, "/api/v1/meta/*", "GET"},
-	{RoleUser, "/api/v1/me", "GET"},
+	// /me 家族是「本人」接口（查看/修改自己的资料、头像、密码、会话），
+	// 只要完成认证即可访问，不应被接口级授权二次拦截。
+	{RoleUser, "/api/v1/me", "*"},
 	{RoleUser, "/api/v1/me/*", "*"},
 
 	// —— 审核员：查看待审岗位并作出审核结论 ——

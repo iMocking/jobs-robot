@@ -114,7 +114,7 @@ export const ROLE_TONE = {
 export const ROLE_LABEL = {
   admin: '管理员',
   reviewer: '审核员',
-  user: '用户',
+  user: '正式会员',
   system: '系统',
 }
 

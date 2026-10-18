@@ -161,13 +161,13 @@ function changePage(next) {
     <!-- 健康检查 -->
     <div
       v-if="health.loading.value && !health.ready.value"
-      class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4"
     >
       <div v-for="index in 4" :key="index" class="card h-[132px] animate-pulse" />
     </div>
 
     <template v-else>
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
         <article v-for="card in dimensionCards" :key="card.key" class="card p-5">
           <div class="flex items-center gap-2.5">
             <span class="size-2.5 shrink-0 rounded-full" :class="TONE_DOT[card.tone]" />
@@ -184,7 +184,7 @@ function changePage(next) {
       <!-- 降级时后端会把具体错误放在 details.error；503 状态码本身只是给探针看的 -->
       <p
         v-if="degradationReason"
-        class="mt-4 flex items-start gap-1.5 rounded-xl bg-red-50 px-4 py-3 text-[12.5px] leading-relaxed text-red-600"
+        class="mt-2 flex items-start gap-1.5 rounded-xl bg-red-50 px-4 py-3 text-[12.5px] leading-relaxed text-red-600"
       >
         <AppIcon name="alert" :size="15" class="mt-px shrink-0" />
         后端报告降级：{{ degradationReason }}（该响应 HTTP 状态为 503，页面按 payload 正常渲染）
@@ -192,7 +192,7 @@ function changePage(next) {
 
       <AppEmpty
         v-if="healthError"
-        class="mt-4"
+        class="mt-2"
         icon="alert"
         tone="danger"
         title="健康检查不可用"
@@ -203,7 +203,7 @@ function changePage(next) {
     </template>
 
     <!-- 抓取运行记录 -->
-    <section class="mt-6">
+    <section class="mt-3">
       <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h2 class="text-[16px] font-semibold text-ink-900">抓取运行记录</h2>
         <div class="flex flex-wrap items-center gap-3">

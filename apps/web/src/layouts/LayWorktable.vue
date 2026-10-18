@@ -51,7 +51,7 @@ onMounted(async () => {
       <AdminTopbar @refresh="onRefresh" />
 
       <main class="flex-1 overflow-y-auto">
-        <div class="w-full px-8 py-6">
+        <div class="w-full p-2">
           <RouterView />
         </div>
       </main>

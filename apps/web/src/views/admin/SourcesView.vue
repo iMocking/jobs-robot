@@ -316,7 +316,7 @@ async function submitCreate() {
 <template>
   <div>
     <!-- 筛选：只筛选已入库的数据，不触发抓取 -->
-    <div class="card mb-5 p-5">
+    <div class="card mb-2.5 p-5">
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <AppInput
           v-model="keywordInput"

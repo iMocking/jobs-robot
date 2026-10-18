@@ -289,7 +289,7 @@ const actionColumns = [
     </RouterLink>
 
     <!-- 首次加载骨架 -->
-    <div v-if="loading && !ready" class="space-y-5">
+    <div v-if="loading && !ready" class="space-y-2.5">
       <div class="card h-[180px] animate-pulse" />
       <div class="card h-[260px] animate-pulse" />
     </div>
@@ -389,7 +389,7 @@ const actionColumns = [
       </section>
 
       <!-- 角色设置 -->
-      <section class="card mt-5 p-6">
+      <section class="card mt-2.5 p-6">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 class="text-[16px] font-semibold text-ink-900">角色设置</h2>
@@ -474,7 +474,7 @@ const actionColumns = [
       </section>
 
       <!-- 最近操作：查真实审计流水（按 actor_id 精确过滤） -->
-      <section class="mt-6">
+      <section class="mt-3">
         <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <h2 class="text-[16px] font-semibold text-ink-900">最近操作</h2>
           <span class="text-[12.5px] text-ink-400">

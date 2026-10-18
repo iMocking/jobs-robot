@@ -183,8 +183,8 @@ const trendSum = computed(() => trend.value.reduce((sum, item) => sum + item.val
 <template>
   <div>
     <!-- 加载骨架：保持与真实内容一致的栅格，避免加载完成时页面跳动 -->
-    <div v-if="loading && !ready" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <div v-for="index in 4" :key="index" class="card h-[116px] animate-pulse" />
+    <div v-if="loading && !ready" class="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+      <div v-for="index in 5" :key="index" class="card h-[116px] animate-pulse" />
     </div>
 
     <AppEmpty
@@ -198,7 +198,7 @@ const trendSum = computed(() => trend.value.reduce((sum, item) => sum + item.val
     </AppEmpty>
 
     <template v-else>
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
           v-for="card in cards"
           :key="card.key"
@@ -210,7 +210,7 @@ const trendSum = computed(() => trend.value.reduce((sum, item) => sum + item.val
         />
       </div>
 
-      <div class="mt-5 grid gap-5 xl:grid-cols-2">
+      <div class="mt-2.5 grid gap-2.5 xl:grid-cols-2">
         <section class="card p-6">
           <header class="mb-6 flex items-center justify-between">
             <h2 class="text-[16px] font-semibold text-ink-900">岗位状态分布</h2>
@@ -241,7 +241,7 @@ const trendSum = computed(() => trend.value.reduce((sum, item) => sum + item.val
       </div>
 
       <!-- 待审核队列：这一屏里唯一需要立刻动手的地方 -->
-      <section class="card mt-5 p-6">
+      <section class="card mt-2.5 p-6">
         <header class="mb-4 flex items-center justify-between">
           <h2 class="text-[16px] font-semibold text-ink-900">
             待审核队列
@@ -292,7 +292,7 @@ const trendSum = computed(() => trend.value.reduce((sum, item) => sum + item.val
       </section>
 
       <!-- 最新抓取运行：回答「数据是怎么来的」 -->
-      <section class="card mt-5 p-6">
+      <section class="card mt-2.5 p-6">
         <header class="mb-4 flex items-center justify-between">
           <h2 class="text-[16px] font-semibold text-ink-900">最新抓取运行</h2>
           <RouterLink

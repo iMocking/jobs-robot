@@ -3,7 +3,7 @@
  * 不出现裸路径，方便日后统一加缓存、埋点或灰色发布开关。
  * 路径与 docs/api.md 一一对应。
  */
-import { http, requestProbe } from '@/api/http'
+import { http, requestProbe, upload } from '@/api/http'
 
 export const authApi = {
   sendCode: (payload) => http.post('/auth/codes', payload, { auth: false }),
@@ -49,6 +49,12 @@ export const meApi = {
   changePassword: (payload) => http.post('/me/password', payload),
   sessions: () => http.get('/me/sessions'),
   revokeSession: (sid) => http.delete(`/me/sessions/${sid}`),
+  /** 上传当前用户头像：multipart 字段 file，返回更新后的用户视图 */
+  uploadAvatar: (file) => {
+    const form = new FormData()
+    form.append('file', file)
+    return upload('/me/avatar', form)
+  },
 }
 
 export const adminApi = {
@@ -122,6 +128,22 @@ export const adminApi = {
     /** 删除后台设置，回落到 configs/config.yaml 的邮件配置 */
     revertConfig: () => http.delete('/admin/mail'),
     sendTest: (to) => http.post('/admin/mail/test', { to }),
+  },
+
+  /**
+   * 图片服务配置（本地目录 / OSS）。
+   *
+   * 与 mail 同款两层模型：configs/config.yaml 的 image 段为基线、被数据库
+   * storage.image 覆盖，保存后立即热生效。OSS AccessKeySecret 永不回显，
+   * 留空或回传占位符即表示不修改。
+   *
+   * 对应 internal/service/image.go 的 ImageConfigView / ImageConfigInput。
+   */
+  image: {
+    config: () => http.get('/admin/image-storage'),
+    saveConfig: (payload) => http.put('/admin/image-storage', payload),
+    /** 删除后台设置，回落到 configs/config.yaml 的图片存储配置 */
+    revertConfig: () => http.delete('/admin/image-storage'),
   },
 
   policies: {

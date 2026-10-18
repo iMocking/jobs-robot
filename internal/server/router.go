@@ -107,6 +107,10 @@ func NewRouter(deps Deps) *gin.Engine {
 	api.GET("/companies/:id", h.CompanyDetail)
 	api.GET("/meta/dictionaries", h.MetaDictionaries)
 
+	// 本地图片存储的公开只读文件路由（<img src> 直接引用，不带鉴权头）。
+	// driver=oss 时本路由返回 404，图片由 OSS 公网域名提供。
+	api.GET("/files/*filepath", h.Files)
+
 	// 系统初始化状态：前端据此渲染初始化向导（是否已有管理员、注册通道是否可用）。
 	// 放在公开分组是因为「还没有任何账号可登录」正是它要回答的场景。
 	api.GET("/system/status", h.SystemStatus)
@@ -136,6 +140,7 @@ func NewRouter(deps Deps) *gin.Engine {
 		authed.GET("/me", h.Me)
 		authed.PATCH("/me", h.UpdateProfile)
 		authed.POST("/me/password", h.ChangePassword)
+		authed.POST("/me/avatar", h.UploadAvatar)
 		authed.GET("/me/sessions", h.Sessions)
 		authed.DELETE("/me/sessions/:sid", h.RevokeSession)
 	}
@@ -193,6 +198,11 @@ func NewRouter(deps Deps) *gin.Engine {
 		admin.PUT("/mail", h.AdminSaveMailConfig)
 		admin.DELETE("/mail", h.AdminRevertMailConfig)
 		admin.POST("/mail/test", h.AdminSendTestMail)
+
+		// 图片服务设置（本地目录 / OSS 在线配置，保存即热生效）
+		admin.GET("/image-storage", h.AdminGetImageConfig)
+		admin.PUT("/image-storage", h.AdminSaveImageConfig)
+		admin.DELETE("/image-storage", h.AdminRevertImageConfig)
 
 		// 审计与授权策略
 		admin.GET("/audit-logs", h.AdminListAuditLogs)

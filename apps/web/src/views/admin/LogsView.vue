@@ -144,7 +144,7 @@ onBeforeUnmount(() => clearTimeout(keywordTimer))
 
 <template>
   <div>
-    <div class="card mb-5 p-5">
+    <div class="card mb-2.5 p-5">
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <AppInput
           v-model="actionInput"

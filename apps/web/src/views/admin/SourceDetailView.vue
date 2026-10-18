@@ -251,7 +251,7 @@ const rulesText = computed(() => {
     </RouterLink>
 
     <!-- 首次加载骨架 -->
-    <div v-if="loading && !ready" class="space-y-5">
+    <div v-if="loading && !ready" class="space-y-2.5">
       <div class="card h-[190px] animate-pulse" />
       <div class="card h-[300px] animate-pulse" />
     </div>
@@ -369,7 +369,7 @@ const rulesText = computed(() => {
       </section>
 
       <!-- 抓取健康：全部来自后端已有的 last_crawl_* / robots_* 字段 -->
-      <section class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section class="mt-2.5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
         <article class="card p-5">
           <div class="flex items-center gap-2.5">
             <span
@@ -554,7 +554,7 @@ const rulesText = computed(() => {
       </section>
 
       <!-- 该公司岗位（含未发布，便于核对审核链路） -->
-      <section class="mt-6">
+      <section class="mt-3">
         <h2 class="mb-3 text-[16px] font-semibold text-ink-900">该公司岗位</h2>
         <AdminTable
           :columns="jobColumns"
@@ -592,7 +592,7 @@ const rulesText = computed(() => {
       </section>
 
       <!-- 抓取记录 -->
-      <section class="mt-6">
+      <section class="mt-3">
         <h2 class="mb-3 text-[16px] font-semibold text-ink-900">最近抓取记录</h2>
         <AdminTable
           :columns="runColumns"

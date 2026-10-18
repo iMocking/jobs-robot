@@ -4,6 +4,7 @@ import { RouterLink, useRoute } from 'vue-router'
 
 import AppIcon from '@/components/AppIcon.vue'
 import AppLogo from '@/components/AppLogo.vue'
+import AvatarUploadTrigger from '@/components/AvatarUploadTrigger.vue'
 import { userInitial } from '@/utils/format'
 
 /**
@@ -86,11 +87,15 @@ const pending = computed(() => props.pendingCount)
 
     <div class="border-t border-white/15 px-4 py-4">
       <div class="flex items-center gap-3">
-        <span
-          class="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-[15px] font-semibold text-white"
-        >
-          {{ userInitial(user) }}
-        </span>
+        <!-- 与账户页同款头像组件：显示头像图/首字兜底 + hover 蒙版换头像 -->
+        <AvatarUploadTrigger
+          :avatar-url="user.avatar_url"
+          :initial="userInitial(user)"
+          :name="user.nickname || '管理员'"
+          tone="sky"
+          size="sm"
+          circle
+        />
         <div class="min-w-0 flex-1">
           <p class="truncate text-[13.5px] font-medium text-white">
             {{ user.nickname || '管理员' }}

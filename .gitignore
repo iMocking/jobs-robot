@@ -2,4 +2,6 @@
 /apps/web/yarn.lock
 /apps/web/package-lock.json
 /apps/web/dist
+/scripts
+
 go.sum

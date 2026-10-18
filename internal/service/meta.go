@@ -65,7 +65,7 @@ func (svc *MetaService) Dictionaries(ctx context.Context) (MetaView, error) {
 		Roles: []MetaOption{
 			{Value: "admin", Label: "管理员"},
 			{Value: "reviewer", Label: "审核员"},
-			{Value: "user", Label: "用户"},
+			{Value: "user", Label: "正式会员"},
 			{Value: "system", Label: "系统"},
 		},
 		CrawlStatuses: []MetaOption{

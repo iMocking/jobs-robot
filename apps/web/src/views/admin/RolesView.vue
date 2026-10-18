@@ -13,7 +13,7 @@ import AppSelect from '@/components/AppSelect.vue'
 import { useAdminRefresh } from '@/composables/useAdminRefresh'
 import { useAsync } from '@/composables/useAsync'
 import { useToastStore } from '@/stores/toast'
-import { ROLE_TONE, roleLabel } from '@/utils/format'
+import { ROLE_LABEL, ROLE_TONE, roleLabel } from '@/utils/format'
 
 /**
  * 角色权限 = 设计稿第 8 屏（角色卡片 + 授权策略表）。
@@ -74,7 +74,7 @@ const ROLE_ICON_CLASS = {
 }
 
 const roleOptions = computed(() =>
-  roles.value.map((role) => ({ value: role.name, label: role.display_name || roleLabel(role.name) })),
+  roles.value.map((role) => ({ value: role.name, label: ROLE_LABEL[role.name] ?? role.display_name ?? role.name })),
 )
 
 /* —— 新增策略 —— */
@@ -136,7 +136,7 @@ async function submitRemove() {
 
 <template>
   <div>
-    <div v-if="loading && !ready" class="grid gap-4 lg:grid-cols-3">
+    <div v-if="loading && !ready" class="grid gap-2 lg:grid-cols-3">
       <div v-for="index in 3" :key="index" class="card h-[172px] animate-pulse" />
     </div>
 
@@ -152,7 +152,7 @@ async function submitRemove() {
 
     <template v-else>
       <!-- 角色卡片：展示后端返回的角色元数据 -->
-      <div class="grid gap-4 lg:grid-cols-3">
+      <div class="grid gap-2 lg:grid-cols-3">
         <article v-for="role in roles" :key="role.name" class="card p-6">
           <span
             class="flex size-11 items-center justify-center rounded-xl"
@@ -163,7 +163,7 @@ async function submitRemove() {
 
           <div class="mt-4 flex flex-wrap items-center gap-2">
             <h2 class="text-[18px] font-semibold text-ink-900">
-              {{ role.display_name || roleLabel(role.name) }}
+              {{ ROLE_LABEL[role.name] ?? role.display_name ?? role.name }}
             </h2>
             <AppBadge size="sm" tone="ink">{{ role.name }}</AppBadge>
             <AppBadge v-if="role.is_system" tone="brand" size="sm">内置</AppBadge>
@@ -190,7 +190,7 @@ async function submitRemove() {
       </div>
 
       <!-- 授权策略表 -->
-      <section class="mt-6">
+      <section class="mt-3">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 class="text-[16px] font-semibold text-ink-900">权限策略</h2>
           <span class="flex flex-wrap items-center gap-3">

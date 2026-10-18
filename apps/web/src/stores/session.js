@@ -94,6 +94,12 @@ export const useSessionStore = defineStore('session', () => {
     return user.value
   }
 
+  /** 用接口返回的最新用户视图同步本地登录态（头像上传等） */
+  function applyUser(view) {
+    if (view) user.value = view
+    return view
+  }
+
   return {
     user,
     accessToken,
@@ -108,6 +114,7 @@ export const useSessionStore = defineStore('session', () => {
     register,
     logout,
     updateProfile,
+    applyUser,
     clear,
   }
 })

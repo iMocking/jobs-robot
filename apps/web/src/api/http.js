@@ -186,6 +186,62 @@ export const http = {
 }
 
 /**
+ * multipart 文件上传（POST）。
+ *
+ * 与 request 的区别：body 必须是 FormData，且不手动设置 Content-Type
+ * （浏览器会附带 multipart boundary）。令牌携带、信封解析、401 静默续期
+ * 与 request 完全一致，失败抛 ApiError。
+ */
+export async function upload(path, formData, options = {}) {
+  const { auth = true } = options
+
+  const doUpload = async () => {
+    const headers = { Accept: 'application/json' }
+    const token = accessToken()
+    if (token) headers.Authorization = `Bearer ${token}`
+
+    const res = await fetch(`${API_BASE}${path}`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    })
+    const payload = await res.json().catch(() => null)
+    if (!payload) {
+      throw new ApiError({ code: 10007, message: `服务响应异常（HTTP ${res.status}）`, status: res.status })
+    }
+    if (payload.code !== 0) {
+      throw new ApiError({
+        code: payload.code,
+        message: payload.message,
+        details: payload.details,
+        status: res.status,
+        requestId: payload.request_id,
+      })
+    }
+    return payload.data
+  }
+
+  try {
+    return await doUpload()
+  } catch (err) {
+    const canRetry =
+      err instanceof ApiError &&
+      AUTH_EXPIRED_CODES.includes(err.code) &&
+      auth &&
+      Boolean(loadTokens()?.refresh_token)
+    if (!canRetry) throw err
+
+    try {
+      await refreshTokens()
+    } catch {
+      clearTokens()
+      throw err
+    }
+    return doUpload()
+  }
+}
+
+/**
  * 探针接口（/healthz、/readyz）专用：**不套 {code,message,data} 信封**。
  *
  * handler.Health 直接 `c.JSON(status, view)`，降级时还会返回 503。

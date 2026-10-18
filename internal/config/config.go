@@ -29,6 +29,7 @@ type Config struct {
 	JWT      JWT      `yaml:"jwt"`
 	Auth     Auth     `yaml:"auth"`
 	Mail     Mail     `yaml:"mail"`
+	Image    ImageStorage `yaml:"image"`
 	Crawler  Crawler  `yaml:"crawler"`
 	CORS     CORS     `yaml:"cors"`
 	Log      Log      `yaml:"log"`
@@ -335,6 +336,76 @@ func (m Mail) Validate() error {
 	}
 }
 
+// ImageStorage 是图片存储服务配置（用户头像等上传图片）。
+//
+// 与 Mail 相同的两层模型：configs/config.yaml 为基线，可被数据库中的
+// storage.image 设置覆盖（后台在线修改、立即热生效）。驱动二选一：
+//   - local：写入本地磁盘目录，通过本服务的 /files 路由或公网前缀访问；
+//   - oss：上传到阿里云 OSS（AccessKeySecret 加密落库，后台不回显明文）。
+type ImageStorage struct {
+	// Driver 存储驱动：local | oss。
+	Driver string `yaml:"driver" env:"IMAGE_DRIVER"`
+	// LocalDir 本地存储根目录（driver=local 时使用；相对路径以项目目录为基准）。
+	LocalDir string `yaml:"local_dir" env:"IMAGE_LOCAL_DIR"`
+	// PublicBaseURL 本地模式的公网访问前缀（如 https://cdn.example.com/uploads）。
+	// 为空时使用本服务自身的 <api_prefix>/files/ 路由（同源部署无需配置）。
+	PublicBaseURL string `yaml:"public_base_url" env:"IMAGE_PUBLIC_BASE_URL"`
+	// OSS 是阿里云 OSS 配置（driver=oss 时使用）。
+	OSS ImageOSS `yaml:"oss"`
+}
+
+// ImageOSS 是阿里云 OSS 存储参数。
+type ImageOSS struct {
+	// Endpoint 是 OSS 访问域名，如 oss-cn-hangzhou.aliyuncs.com（可不带 https://）。
+	Endpoint string `yaml:"endpoint" env:"IMAGE_OSS_ENDPOINT"`
+	// Bucket 是存储空间名称。
+	Bucket string `yaml:"bucket" env:"IMAGE_OSS_BUCKET"`
+	// AccessKeyID 是访问密钥 ID。
+	AccessKeyID string `yaml:"access_key_id" env:"IMAGE_OSS_ACCESS_KEY_ID"`
+	// AccessKeySecret 是访问密钥（只写入配置/加密落库，接口永不回显明文）。
+	AccessKeySecret string `yaml:"access_key_secret" env:"IMAGE_OSS_ACCESS_KEY_SECRET"`
+	// PublicURL 是文件的公网访问前缀，例如 https://bucket.oss-cn-hangzhou.aliyuncs.com。
+	// 为空时由 endpoint+bucket 推导（仅适用于标准经典域名）。
+	PublicURL string `yaml:"public_url" env:"IMAGE_OSS_PUBLIC_URL"`
+}
+
+// DefaultImageDir 是本地模式的默认存储目录。
+const DefaultImageDir = "var/uploads"
+
+// Validate 校验图片存储配置。
+//
+// 与 Mail.Validate 同理：后台在线保存图片配置时复用同一套规则，
+// 保证「启动能过、后台保存能过、上传必成功」的一致性。
+func (s ImageStorage) Validate() error {
+	switch s.Driver {
+	case "local":
+		if strings.TrimSpace(s.LocalDir) == "" {
+			return fmt.Errorf("图片存储配置有误：本地驱动需要设置 local_dir 存储路径")
+		}
+		return nil
+	case "oss":
+		var problems []string
+		if strings.TrimSpace(s.OSS.Endpoint) == "" {
+			problems = append(problems, "oss endpoint 不能为空")
+		}
+		if strings.TrimSpace(s.OSS.Bucket) == "" {
+			problems = append(problems, "oss bucket 不能为空")
+		}
+		if strings.TrimSpace(s.OSS.AccessKeyID) == "" {
+			problems = append(problems, "oss access_key_id 不能为空")
+		}
+		if strings.TrimSpace(s.OSS.AccessKeySecret) == "" {
+			problems = append(problems, "oss access_key_secret 不能为空")
+		}
+		if len(problems) > 0 {
+			return fmt.Errorf("图片存储配置有误：%s", strings.Join(problems, "；"))
+		}
+		return nil
+	default:
+		return fmt.Errorf("图片存储驱动只支持 local/oss，当前为 %q", s.Driver)
+	}
+}
+
 // Crawler 是爬虫子系统的全部配置。
 type Crawler struct {
 	Enabled         bool          `yaml:"enabled"            env:"CRAWLER_ENABLED"`
@@ -517,6 +588,10 @@ func Default() *Config {
 			FromName:       "直招好工作",
 			FromAddress:    "no-reply@jobs-robot.local",
 			SMTP:           SMTP{Port: 465, TLS: true},
+		},
+		Image: ImageStorage{
+			Driver:   "local",
+			LocalDir: DefaultImageDir,
 		},
 		Crawler: Crawler{
 			Enabled:         true,
@@ -751,6 +826,11 @@ func (c *Config) Validate() error {
 
 	// 邮件配置校验抽成 Mail.Validate()，供「后台在线修改邮件配置」复用同一套规则。
 	if err := c.Mail.Validate(); err != nil {
+		problems = append(problems, err.Error())
+	}
+
+	// 图片存储配置校验同样抽成 ImageStorage.Validate()，后台在线保存时复用。
+	if err := c.Image.Validate(); err != nil {
 		problems = append(problems, err.Error())
 	}
 

@@ -492,7 +492,7 @@ const TEXTAREA_CLASS =
 <template>
   <div>
     <!-- 筛选：状态一行摊开，关键词 / 类别 / 公司收在下面一行 -->
-    <section class="card mb-4 p-4">
+    <section class="card mb-2 p-4">
       <div class="flex flex-wrap items-center gap-2">
         <button
           v-for="tab in STATUS_TABS"

@@ -52,7 +52,7 @@ var roleSeeds = []roleSeed{
 	},
 	{
 		Name:        casbin.RoleUser,
-		DisplayName: "用户",
+		DisplayName: "正式会员",
 		Description: "浏览已发布的直招岗位，维护个人资料与登录会话",
 		Level:       10,
 	},
