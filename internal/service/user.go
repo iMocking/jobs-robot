@@ -11,6 +11,7 @@ import (
 	"github.com/jsong/jobs-robot/internal/ent/auditlog"
 	entuser "github.com/jsong/jobs-robot/internal/ent/user"
 	"github.com/jsong/jobs-robot/internal/ent/verificationcode"
+	"github.com/jsong/jobs-robot/internal/mail"
 	"github.com/jsong/jobs-robot/internal/pkg/apperr"
 	"github.com/jsong/jobs-robot/internal/pkg/response"
 )
@@ -186,7 +187,70 @@ func (svc *UserService) SetRoles(ctx context.Context, id string, roles []string,
 
 	svc.s.Audit.Record(ctx, actor, "user.set_roles", "user", id,
 		map[string]any{"old": current, "new": roles})
+
+	// 变更通知：发往被变更账号邮箱与操作人邮箱（邮件失败不阻断主流程，
+	// sendSystemMail 会在审计里记录 success=false 供排查）。
+	svc.notifyRoleChanged(ctx, actor, user, current, roles)
+
 	return NewUserView(user, roles), nil
+}
+
+// roleLabel 返回内置角色的中文展示名（与前端 ROLE_LABEL 保持一致）。
+func roleLabel(role string) string {
+	switch role {
+	case casbin.RoleAdmin:
+		return "管理员"
+	case casbin.RoleReviewer:
+		return "审核员"
+	case casbin.RoleUser:
+		return "正式会员"
+	case casbin.RoleSystem:
+		return "系统"
+	default:
+		return role
+	}
+}
+
+// joinRoleLabels 把角色列表拼接成「A、B」形式，用于通知邮件正文。
+func joinRoleLabels(roles []string) string {
+	labels := make([]string, 0, len(roles))
+	for _, r := range roles {
+		labels = append(labels, roleLabel(r))
+	}
+	return strings.Join(labels, "、")
+}
+
+// notifyRoleChanged 在角色变更成功后通知被变更用户与操作人本人。
+func (svc *UserService) notifyRoleChanged(ctx context.Context, actor Actor, user *ent.User, oldRoles, newRoles []string) {
+	oldLabel := joinRoleLabels(oldRoles)
+	newLabel := joinRoleLabels(newRoles)
+	at := time.Now()
+
+	// 被变更账号：邮件主题/正文以「您的账号」口吻，面向本人。
+	toUser := mail.RoleChangedMessage(
+		user.Email,
+		user.Nickname,
+		oldLabel,
+		newLabel,
+		actor.Email,
+		at,
+	)
+	if user.Email != "" && user.Email != actor.Email {
+		_ = svc.s.sendSystemMail(ctx, mailPurposeNotifyRoleChanged, user.Email, user.ID, toUser)
+	}
+
+	// 操作人：留档确认邮件，正文一致。
+	if actor.Email != "" {
+		toOperator := mail.RoleChangedMessage(
+			actor.Email,
+			user.Nickname,
+			oldLabel,
+			newLabel,
+			actor.Email,
+			at,
+		)
+		_ = svc.s.sendSystemMail(ctx, mailPurposeNotifyRoleChanged, actor.Email, user.ID, toOperator)
+	}
 }
 
 // ResetPassword 由管理员重置指定用户密码，并强制该用户重新登录。

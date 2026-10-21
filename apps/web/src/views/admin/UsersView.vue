@@ -1,11 +1,12 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
 
-import { adminApi } from '@/api'
+import { adminApi, authApi } from '@/api'
 import AdminTable from '@/components/AdminTable.vue'
 import AppAvatar from '@/components/AppAvatar.vue'
 import AppBadge from '@/components/AppBadge.vue'
 import AppButton from '@/components/AppButton.vue'
+import AppCheckbox from '@/components/AppCheckbox.vue'
 import AppEmpty from '@/components/AppEmpty.vue'
 import AppIcon from '@/components/AppIcon.vue'
 import AppInput from '@/components/AppInput.vue'
@@ -14,8 +15,10 @@ import AppPagination from '@/components/AppPagination.vue'
 import AppSelect from '@/components/AppSelect.vue'
 import { useAdminRefresh } from '@/composables/useAdminRefresh'
 import { useAsync } from '@/composables/useAsync'
+import { useSessionStore } from '@/stores/session'
 import { useToastStore } from '@/stores/toast'
 import {
+  ROLE_LABEL,
   ROLE_TONE,
   USER_STATUS,
   formatDate,
@@ -37,6 +40,7 @@ import {
 const PAGE_SIZE = 10
 
 const toast = useToastStore()
+const session = useSessionStore()
 
 const filters = reactive({
   keyword: '',
@@ -136,6 +140,83 @@ async function toggleStatus(user) {
     toast.fromError(err)
   } finally {
     busyId.value = null
+  }
+}
+
+/* —— 身份变更（管理员本人邮箱验证码二次确认 + 双向邮件通知） —— */
+
+/** 可授予的真人身份：不含 system（系统机器身份不可变更） */
+const roleOptions = [
+  { value: 'admin', label: ROLE_LABEL.admin },
+  { value: 'reviewer', label: ROLE_LABEL.reviewer },
+  { value: 'user', label: ROLE_LABEL.user },
+]
+
+const roleTarget = ref(null)
+const roleForm = reactive({ roles: [], code: '' })
+const changingRoles = ref(false)
+const sendingCode = ref(false)
+const codeSeconds = ref(0)
+let codeCountdown = null
+
+function openRoles(user) {
+  roleTarget.value = user
+  roleForm.roles = [...user.roles]
+  roleForm.code = ''
+  codeSeconds.value = 0
+  clearInterval(codeCountdown)
+}
+
+function toggleRole(value) {
+  const idx = roleForm.roles.indexOf(value)
+  if (idx >= 0) roleForm.roles.splice(idx, 1)
+  else roleForm.roles.push(value)
+}
+
+async function sendRoleCode() {
+  const email = session.user?.email
+  if (!email) {
+    toast.error('无法获取当前登录邮箱，请刷新后重试')
+    return
+  }
+  sendingCode.value = true
+  try {
+    await authApi.sendCode({ email, purpose: 'role_change' })
+    codeSeconds.value = 60
+    clearInterval(codeCountdown)
+    codeCountdown = setInterval(() => {
+      codeSeconds.value -= 1
+      if (codeSeconds.value <= 0) clearInterval(codeCountdown)
+    }, 1000)
+    toast.success(`验证码已发送至 ${email}`)
+  } catch (err) {
+    toast.fromError(err, '发送验证码失败')
+  } finally {
+    sendingCode.value = false
+  }
+}
+
+async function submitRoles() {
+  if (roleForm.roles.length === 0) {
+    toast.error('请至少选择一个身份')
+    return
+  }
+  if (!roleForm.code.trim()) {
+    toast.error('请输入邮箱验证码')
+    return
+  }
+  changingRoles.value = true
+  try {
+    await adminApi.users.setRoles(roleTarget.value.id, roleForm.roles, roleForm.code.trim())
+    const labels = roleForm.roles.map((r) => ROLE_LABEL[r] ?? r).join('、')
+    toast.success(`已将 ${roleTarget.value.email} 的身份变更为「${labels}」，已邮件通知双方`)
+    roleTarget.value = null
+    clearInterval(codeCountdown)
+    run()
+  } catch (err) {
+    toast.fromError(err, '身份变更失败')
+  } finally {
+    changingRoles.value = false
   }
 }
 
@@ -304,6 +385,16 @@ async function submitDelete() {
 
         <td class="td-cell">
           <div class="flex items-center gap-1.5">
+            <button
+              v-if="user.kind !== 'system'"
+              type="button"
+              class="flex size-8 items-center justify-center rounded-lg border border-ink-200 text-ink-500 transition hover:border-brand-300 hover:text-brand-600"
+              title="变更身份"
+              @click="openRoles(user)"
+            >
+              <AppIcon name="shield-check" :size="15" />
+            </button>
+
             <RouterLink
               :to="{ name: 'user', params: { id: user.id } }"
               class="flex size-8 items-center justify-center rounded-lg border border-ink-200 text-ink-500 transition hover:border-brand-300 hover:text-brand-600"
@@ -363,6 +454,56 @@ async function submitDelete() {
         </div>
       </template>
     </AdminTable>
+
+    <!-- 变更身份（邮箱验证码二次确认） -->
+    <AppModal
+      :model-value="Boolean(roleTarget)"
+      title="变更身份"
+      :description="roleTarget ? `目标账号：${roleTarget.nickname}（${roleTarget.email}）` : ''"
+      size="sm"
+      @update:model-value="roleTarget = null"
+    >
+      <p class="mb-2 text-[12.5px] font-medium text-ink-500">新身份（可多选）</p>
+      <div class="flex flex-col gap-2">
+        <label
+          v-for="opt in roleOptions"
+          :key="opt.value"
+          class="flex cursor-pointer items-center gap-2.5 rounded-lg border border-ink-200 px-3 py-2.5 transition hover:border-brand-300"
+          :class="roleForm.roles.includes(opt.value) ? 'border-brand-300 bg-brand-50/50' : ''"
+        >
+          <AppCheckbox
+            :model-value="roleForm.roles.includes(opt.value)"
+            @update:model-value="toggleRole(opt.value)"
+          />
+          <span class="text-[13.5px] text-ink-900">{{ opt.label }}</span>
+        </label>
+      </div>
+
+      <div class="mt-4 border-t border-ink-100 pt-4">
+        <div class="mb-1.5 flex items-center justify-between">
+          <p class="text-[12.5px] font-medium text-ink-500">邮箱验证</p>
+          <button
+            type="button"
+            class="text-[12.5px] font-medium text-brand-600 transition hover:text-brand-700 disabled:opacity-50"
+            :disabled="sendingCode || codeSeconds > 0"
+            @click="sendRoleCode"
+          >
+            {{ codeSeconds > 0 ? `${codeSeconds}s 后重发` : '发送验证码' }}
+          </button>
+        </div>
+        <p class="mb-2.5 text-[12px] leading-relaxed text-ink-400">
+          验证码将发送至你的管理员邮箱
+          <span class="font-medium text-ink-600">{{ session.user?.email }}</span
+          >，用于确认本次身份变更由你本人操作。
+        </p>
+        <AppInput v-model="roleForm.code" label="验证码" icon="lock" placeholder="6 位数字验证码" />
+      </div>
+
+      <template #footer>
+        <AppButton variant="secondary" @click="roleTarget = null">取消</AppButton>
+        <AppButton :loading="changingRoles" @click="submitRoles">确认变更</AppButton>
+      </template>
+    </AppModal>
 
     <!-- 重置密码 -->
     <AppModal

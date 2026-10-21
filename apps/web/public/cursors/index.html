@@ -3,112 +3,102 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>JobHub 光标系统 v4</title>
+<title>JobHub 光标系统 v7</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: "Rajdhani", "Orbitron", "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
     min-height: 100vh;
-    color: #E8F0FF;
+    color: #0F1B3D;
     overflow-x: hidden;
-    background-color: #060B1A;
-    background-image:
-      linear-gradient(rgba(56,189,248,.045) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(56,189,248,.045) 1px, transparent 1px),
-      radial-gradient(680px 400px at 10% -8%, rgba(56,189,248,.13), transparent 62%),
-      radial-gradient(600px 400px at 92% 10%, rgba(59,130,246,.11), transparent 62%);
-    background-size: 48px 48px, 48px 48px, auto, auto;
+    background:
+      radial-gradient(720px 420px at 12% -10%, rgba(255,255,255,.55), transparent 60%),
+      radial-gradient(640px 420px at 94% 8%, rgba(125,211,252,.35), transparent 62%),
+      linear-gradient(160deg, #BFE9D6 0%, #A8DCD0 48%, #9BD8D6 100%);
     padding: 56px 44px 64px;
   }
   .wrap { max-width: 1220px; margin: 0 auto; }
-  header { margin-bottom: 44px; position: relative; }
+  header { margin-bottom: 44px; }
   .kicker {
     display: inline-flex; align-items: center; gap: 12px;
     font-size: 11px; letter-spacing: 7px; font-weight: 600;
-    color: #7DD3FC;
-    background: rgba(13,26,58,.5);
-    border: 1px solid rgba(125,211,252,.35);
-    border-left: 3px solid #38BDF8;
+    color: #1D4ED8;
+    background: rgba(255,255,255,.55);
+    border: 1px solid rgba(37,99,235,.25);
+    border-left: 3px solid #2563EB;
     padding: 8px 18px 8px 14px;
     margin-bottom: 22px;
+    backdrop-filter: blur(4px);
   }
-  .kicker::before { content: '▮'; font-size: 10px; color: #38BDF8; }
+  .kicker::before { content: '▮'; font-size: 10px; color: #2563EB; }
   h1 {
     font-size: 48px; font-weight: 700; letter-spacing: 5px;
-    color: #FFFFFF;
-    text-shadow: 0 0 24px rgba(56,189,248,.35);
+    color: #0F1B3D;
   }
   h1 i {
     font-style: normal; font-weight: 600; font-size: 30px; letter-spacing: 3px;
-    color: #7DD3FC; margin-left: 14px;
+    color: #2563EB; margin-left: 14px;
   }
   .sub {
     margin-top: 12px; font-size: 14px; letter-spacing: 1px;
-    color: rgba(165,203,245,.75); max-width: 860px; line-height: 1.9;
+    color: rgba(15,27,61,.66); max-width: 860px; line-height: 1.9;
   }
-  .sub b { color: #FFFFFF; font-weight: 600; }
+  .sub b { color: #1D4ED8; font-weight: 700; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(224px, 1fr)); gap: 20px; }
   .card {
     position: relative;
-    background: linear-gradient(168deg, rgba(15,29,64,.55), rgba(8,14,34,.78));
+    background: rgba(255,255,255,.62);
     padding: 26px 18px 20px;
     text-align: center;
-    border: 1px solid rgba(125,211,252,.16);
-    border-top: 2px solid rgba(56,189,248,.5);
-    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
-    transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease;
-  }
-  .card::before {
-    content: ''; position: absolute; top: -2px; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, #38BDF8, transparent 60%);
-    opacity: 0; transition: opacity .16s ease;
+    border: 1px solid rgba(37,99,235,.14);
+    border-radius: 14px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 6px 18px rgba(15,27,61,.06);
+    transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
   }
   .card:hover {
     transform: translateY(-3px);
-    border-color: rgba(125,211,252,.42);
-    background: linear-gradient(168deg, rgba(18,34,74,.65), rgba(10,17,40,.85));
-    box-shadow: 0 0 0 1px rgba(56,189,248,.12), 0 0 28px rgba(56,189,248,.16), 0 14px 32px rgba(2,6,18,.5);
+    background: rgba(255,255,255,.82);
+    box-shadow: 0 10px 26px rgba(37,99,235,.16);
   }
-  .card:hover::before { opacity: 1; }
   .icon {
     width: 116px; height: 116px; margin: 0 auto 14px;
     display: flex; align-items: center; justify-content: center;
-    background: radial-gradient(76px 76px at 50% 42%, rgba(56,189,248,.09), transparent 70%), rgba(255,255,255,.02);
-    border: 1px solid rgba(125,211,252,.13);
-    clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 11px 100%, 0 calc(100% - 11px));
+    background: radial-gradient(76px 76px at 50% 42%, rgba(59,130,246,.10), transparent 70%), rgba(255,255,255,.5);
+    border: 1px solid rgba(37,99,235,.12);
+    border-radius: 12px;
   }
-  .card:hover .icon { border-color: rgba(125,211,252,.36); }
   .icon img { width: 92px; height: 92px; display: block; }
-  .name { font-size: 16px; font-weight: 700; letter-spacing: 2px; color: #FFFFFF; }
-  .name em { font-style: normal; font-weight: 500; font-size: 11px; letter-spacing: 2.5px; color: #7DD3FC; margin-left: 8px; }
+  .name { font-size: 16px; font-weight: 700; letter-spacing: 2px; color: #0F1B3D; }
+  .name em { font-style: normal; font-weight: 500; font-size: 11px; letter-spacing: 2.5px; color: #2563EB; margin-left: 8px; }
   .cls {
     margin-top: 10px; font-size: 11px; letter-spacing: .5px;
-    color: #A5B4FC;
+    color: #1D4ED8;
     font-family: "JetBrains Mono", Consolas, monospace;
-    background: rgba(6,11,26,.55); border: 1px solid rgba(125,211,252,.18);
-    border-left: 2px solid #38BDF8;
+    background: rgba(255,255,255,.6); border: 1px solid rgba(37,99,235,.2);
+    border-left: 2px solid #2563EB;
     padding: 4px 10px;
     display: inline-block;
   }
-  .desc { margin-top: 9px; font-size: 11.5px; letter-spacing: 2.5px; color: rgba(148,178,225,.55); }
+  .desc { margin-top: 9px; font-size: 11.5px; letter-spacing: 2.5px; color: rgba(15,27,61,.42); }
   footer {
-    margin-top: 40px; font-size: 12px; letter-spacing: 3px; color: rgba(125,211,252,.55);
+    margin-top: 40px; font-size: 12px; letter-spacing: 3px; color: rgba(15,27,61,.5);
     display: flex; align-items: center; gap: 10px;
   }
-  footer::before { content: '▮'; font-size: 10px; color: #38BDF8; }
+  footer::before { content: '▮'; font-size: 10px; color: #2563EB; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <span class="kicker">JOBHUB SYSTEM · V4</span>
-    <h1>光标系统<i>KURO CURSOR</i></h1>
-    <p class="sub">鸣潮式审美：<b>菱形圆润箭头</b>、白主体 + 深轮廓 + 浅蓝亮线、克制辉光 —— 简洁圆润，悬停任意卡片体验对应光标。</p>
+    <span class="kicker">JOBHUB SYSTEM · V7</span>
+    <h1>光标系统<i>ORIGAMI CURSOR</i></h1>
+    <p class="sub">参考图风格：<b>立体折纸卡通</b>、纸飞机箭头 + 白面浅蓝面 + 深蓝轮廓、圆润可爱 —— 透明 PNG 光标，悬停任意卡片体验对应光标。</p>
   </header>
 
   <div class="grid" id="grid"></div>
 
-  <footer>SYSTEM ASSETS: public/cursors/*.svg · 32×32 VIEWBOX · FINE WHITE · KURO STYLE</footer>
+  <footer>SYSTEM ASSETS: public/cursors/*.png · 32×32 · ORIGAMI 3D · CARTOON</footer>
 </div>
 
 <script>
@@ -137,7 +127,7 @@ for (const [file, cn, en, cls, css] of ITEMS) {
   card.className = 'card';
   card.style.cursor = css;
   card.innerHTML =
-    '<div class="icon"><img src="/cursors/' + file + '.svg" alt="' + en + '"></div>' +
+    '<div class="icon"><img src="/cursors/' + file + '.png" alt="' + en + '"></div>' +
     '<div class="name">' + cn + '<em>' + en + '</em></div>' +
     '<div><span class="cls">' + cls + '</span></div>' +
     '<div class="desc">' + en + '</div>';

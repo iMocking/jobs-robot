@@ -65,6 +65,7 @@ var purposeLabels = map[auth.CodePurpose]string{
 	auth.CodePurposeResetPassword: "找回密码",
 	auth.CodePurposeChangeEmail:   "更换邮箱",
 	auth.CodePurposeLogin:         "登录",
+	auth.CodePurposeRoleChange:    "身份变更",
 }
 
 func labelOf(p auth.CodePurpose) string {
@@ -108,7 +109,7 @@ func (svc *AuthService) SendCode(ctx context.Context, email string, purpose auth
 		if user != nil {
 			return nil, apperr.ErrEmailExists
 		}
-	case auth.CodePurposeResetPassword, auth.CodePurposeLogin:
+	case auth.CodePurposeResetPassword, auth.CodePurposeLogin, auth.CodePurposeRoleChange:
 		// 账号不存在时静默返回成功，保持与存在时完全一致的外部表现。
 		if user == nil {
 			return &SendCodeResult{

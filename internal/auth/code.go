@@ -27,12 +27,14 @@ const (
 	CodePurposeResetPassword CodePurpose = "reset_password"
 	CodePurposeChangeEmail   CodePurpose = "change_email"
 	CodePurposeLogin         CodePurpose = "login"
+	// CodePurposeRoleChange 用于管理员在后台变更用户身份时，向操作人本人邮箱发送确认码。
+	CodePurposeRoleChange CodePurpose = "role_change"
 )
 
 // Valid 判断用途是否合法。
 func (p CodePurpose) Valid() bool {
 	switch p {
-	case CodePurposeRegister, CodePurposeResetPassword, CodePurposeChangeEmail, CodePurposeLogin:
+	case CodePurposeRegister, CodePurposeResetPassword, CodePurposeChangeEmail, CodePurposeLogin, CodePurposeRoleChange:
 		return true
 	default:
 		return false

@@ -14,7 +14,7 @@ import (
 
 type sendCodeRequest struct {
 	Email   string `json:"email" binding:"required"`
-	Purpose string `json:"purpose" binding:"required,oneof=register reset_password change_email login"`
+	Purpose string `json:"purpose" binding:"required,oneof=register reset_password change_email login role_change"`
 }
 
 type registerRequest struct {

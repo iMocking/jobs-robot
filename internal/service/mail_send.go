@@ -17,6 +17,7 @@ const (
 	mailPurposeVerifyChangeEmail   = "verify_change_email"
 	mailPurposeVerifyLogin         = "verify_login"
 	mailPurposeNotifyPasswordReset = "notify_password_changed"
+	mailPurposeNotifyRoleChanged   = "notify_role_changed"
 	mailPurposeVerifyUnknown       = "verify"
 )
 

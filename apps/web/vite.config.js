@@ -14,7 +14,10 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
+    port: 3000,
+    host: '0.0.0.0',
+    cors: true,
+    open: true,
     proxy: {
       // 本地联调：把 /api 与探针转发给 cmd/api 起的 Go 服务。
       // 端口取自 configs/config.yaml 的 server.port（8090），不是 8080。
@@ -31,5 +34,5 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
-  },
+  }
 })

@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/jsong/jobs-robot/internal/auth"
 	"github.com/jsong/jobs-robot/internal/crawler"
 	"github.com/jsong/jobs-robot/internal/pkg/apperr"
 	"github.com/jsong/jobs-robot/internal/pkg/response"
@@ -77,6 +78,9 @@ type setStatusRequest struct {
 
 type setRolesRequest struct {
 	Roles []string `json:"roles" binding:"required,min=1"`
+	// Code 是发送到操作人邮箱的身份变更确认码。
+	// 身份变更属于高风险操作，必须二次验证「管理员本人」才执行。
+	Code string `json:"code" binding:"required"`
 }
 
 type resetUserPasswordRequest struct {
@@ -422,7 +426,7 @@ func (h *Handler) AdminSetUserStatus(c *gin.Context) {
 	response.OK(c, view)
 }
 
-// AdminSetUserRoles 设置用户角色。
+// AdminSetUserRoles 设置用户角色（需操作人本人邮箱验证码确认）。
 //
 // POST /api/v1/admin/users/:id/roles
 func (h *Handler) AdminSetUserRoles(c *gin.Context) {
@@ -438,12 +442,34 @@ func (h *Handler) AdminSetUserRoles(c *gin.Context) {
 		return
 	}
 
-	view, err := h.svc.User.SetRoles(c.Request.Context(), id, req.Roles, h.actor(c))
+	actor := h.actor(c)
+
+	// 敏感操作二次验证：确认码必须匹配「操作人本人」的邮箱与 role_change 用途，
+	// 验证通过即被消费（一次性）。这样即使操作人账号被他人接管，
+	// 没有操作人邮箱中的验证码也无法变更任何用户身份。
+	if err := h.verifyRoleChangeCode(c, actor, req.Code); err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	view, err := h.svc.User.SetRoles(c.Request.Context(), id, req.Roles, actor)
 	if err != nil {
 		response.Fail(c, err)
 		return
 	}
 	response.OK(c, view)
+}
+
+// verifyRoleChangeCode 校验身份变更确认码。
+func (h *Handler) verifyRoleChangeCode(c *gin.Context, actor service.Actor, code string) error {
+	if actor.Email == "" {
+		return apperr.ErrForbidden.WithMessage("无法确认操作人邮箱，已拒绝本次身份变更")
+	}
+	if err := h.svc.Codes.Verify(c.Request.Context(), actor.Email, auth.CodePurposeRoleChange, code); err != nil {
+		// ErrCodeInvalid 已携带可读文案（验证码错误/过期/尝试次数过多），原样透出。
+		return err
+	}
+	return nil
 }
 
 // AdminResetUserPassword 管理员重置用户密码。

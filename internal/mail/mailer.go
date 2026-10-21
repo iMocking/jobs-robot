@@ -110,6 +110,43 @@ func VerificationCodeMessage(to, code, purposeLabel string, ttl time.Duration) M
 	return Message{To: to, Subject: subject, Text: text, HTML: html}
 }
 
+// RoleChangedMessage 构造用户身份变更通知邮件。
+//
+// 同一封邮件会分别发送给「被变更用户」与「操作人」，正文中的角色名是已翻译的中文文案。
+func RoleChangedMessage(to, displayName, oldRolesLabel, newRolesLabel, operatorEmail string, at time.Time) Message {
+	subject := "【直招好工作】您的账号身份已变更"
+	timeStr := at.Format("2006-01-02 15:04:05")
+
+	text := fmt.Sprintf(`您好，%s，
+
+您的账号身份已由「%s」变更为「%s」。
+
+操作人：%s
+变更时间：%s
+
+如果这不是您本人的操作，请立即修改密码，并联系管理员核实。
+
+—— 直招好工作
+`, displayName, oldRolesLabel, newRolesLabel, operatorEmail, timeStr)
+
+	html := fmt.Sprintf(`<!DOCTYPE html>
+<html lang="zh-CN">
+<body style="margin:0;padding:24px;background:#f5f6f8;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;color:#1f2329;">
+  <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:12px;padding:32px;">
+    <h2 style="margin:0 0 8px;font-size:18px;">直招好工作</h2>
+    <p style="margin:0 0 24px;color:#646a73;font-size:14px;">企业官网直招岗位聚合平台</p>
+    <p style="margin:0 0 8px;font-size:14px;">您好，%s，</p>
+    <p style="margin:0 0 16px;font-size:14px;">您的账号身份已由「<strong>%s</strong>」变更为「<strong>%s</strong>」。</p>
+    <p style="margin:0 0 4px;font-size:13px;color:#646a73;">操作人：%s</p>
+    <p style="margin:0 0 20px;font-size:13px;color:#646a73;">变更时间：%s</p>
+    <p style="margin:0;font-size:13px;color:#8f959e;">如果这不是您本人的操作，请立即修改密码，并联系管理员核实。</p>
+  </div>
+</body>
+</html>`, displayName, oldRolesLabel, newRolesLabel, operatorEmail, timeStr)
+
+	return Message{To: to, Subject: subject, Text: text, HTML: html}
+}
+
 // PasswordResetDoneMessage 构造密码重置成功通知邮件。
 func PasswordResetDoneMessage(to string, at time.Time) Message {
 	subject := "【直招好工作】您的密码已重置"

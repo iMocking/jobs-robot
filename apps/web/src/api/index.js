@@ -97,7 +97,7 @@ export const adminApi = {
     list: (query) => http.get('/admin/users', { query }),
     detail: (id) => http.get(`/admin/users/${id}`),
     setStatus: (id, status) => http.post(`/admin/users/${id}/status`, { status }),
-    setRoles: (id, roles) => http.post(`/admin/users/${id}/roles`, { roles }),
+    setRoles: (id, roles, code) => http.post(`/admin/users/${id}/roles`, { roles, code }),
     resetPassword: (id, newPassword) => http.post(`/admin/users/${id}/reset-password`, { new_password: newPassword }),
     remove: (id) => http.delete(`/admin/users/${id}`),
   },
